@@ -91,7 +91,17 @@ jobs:
 
 ## GitLab CI
 
-GitLab's vulnerability dashboard requires its own security report JSON format, not raw SARIF. The pipeline should export SARIF from NightVision, then convert it to GitLab format. The agent should write the conversion script for the user's repo.
+GitLab's vulnerability dashboard requires its own security report JSON format, not raw SARIF. The pipeline exports SARIF from NightVision, then converts it to GitLab format.
+
+Use the single canonical converter rather than writing a per-repo copy (hand-written copies drift apart). The report stage fetches it at runtime so the pipeline is self-contained: a repo that copy-pastes only this YAML still produces the report on the final stage.
+
+```
+curl -sSfL https://raw.githubusercontent.com/nvsecurity/nv-public-reference/main/sarif/convert_sarif_to_gitlab.py -o convert_sarif_to_gitlab.py
+```
+
+For a production pipeline, pin the converter URL to a tag or commit SHA instead of `main`.
+
+Forward note: a future CLI subcommand (`nightvision export gitlab`) will emit GitLab's report directly, removing this fetch-and-convert step.
 
 ```yaml
 stages:
@@ -133,9 +143,9 @@ report:
   stage: report
   image: python:3.9
   script:
-    # The agent should write a SARIF-to-GitLab conversion script
-    # that reads results.sarif and outputs gitlab_security_report.json
-    # in GitLab's security report schema.
+    # Fetch the canonical SARIF-to-GitLab converter. It reads results.sarif
+    # and writes gitlab_security_report.json in GitLab's report schema.
+    - curl -sSfL https://raw.githubusercontent.com/nvsecurity/nv-public-reference/main/sarif/convert_sarif_to_gitlab.py -o convert_sarif_to_gitlab.py
     - python3 convert_sarif_to_gitlab.py
   artifacts:
     reports:
