@@ -28,7 +28,7 @@ This plugin gives Claude Code the skills to run NightVision scans, triage result
 **From the terminal:**
 
 ```bash
-claude plugin marketplace add nvsecurity/skills
+claude plugin marketplace add nvsecurity/claude-marketplace
 claude plugin install nightvision@nvsecurity
 claude
 ```
@@ -36,7 +36,7 @@ claude
 **From inside Claude Code:**
 
 ```
-/plugin marketplace add nvsecurity/skills
+/plugin marketplace add nvsecurity/claude-marketplace
 ```
 ```
 /plugin install nightvision@nvsecurity
