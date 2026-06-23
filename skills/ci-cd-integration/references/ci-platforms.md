@@ -91,67 +91,66 @@ jobs:
 
 ## GitLab CI
 
-GitLab's vulnerability dashboard requires its own security report JSON format, not raw SARIF. The pipeline exports SARIF from NightVision, then converts it to GitLab format.
+GitLab's vulnerability dashboard requires its own DAST report format, not raw SARIF. The NightVision CLI emits it natively with `nightvision export gitlab`, so no external converter or separate SARIF-to-GitLab step is needed. Upload the result as a GitLab `dast` report; GitLab then deduplicates findings across pipelines on the report's stable per-finding fingerprint, so dismissals carry forward instead of reappearing as new.
 
-Use the single canonical converter rather than writing a per-repo copy (hand-written copies drift apart). The report stage fetches it at runtime so the pipeline is self-contained: a repo that copy-pastes only this YAML still produces the report on the final stage.
-
-```
-curl -sSfL https://raw.githubusercontent.com/nvsecurity/nv-public-reference/main/sarif/convert_sarif_to_gitlab.py -o convert_sarif_to_gitlab.py
-```
-
-For a production pipeline, pin the converter URL to a tag or commit SHA instead of `main`.
-
-Forward note: a future CLI subcommand (`nightvision export gitlab`) will emit GitLab's report directly, removing this fetch-and-convert step.
+Aggregating findings into the GitLab Vulnerability Report requires a GitLab Ultimate plan (or trial).
 
 ```yaml
 stages:
   - scan
-  - report
 
 variables:
   NIGHTVISION_TARGET: my-api
+  NIGHTVISION_APP: my-api
   NIGHTVISION_AUTH: my-api
-  DOCKER_HOST: tcp://docker:2375/
+  # Secure docker-in-docker: TLS on 2376, not the unauthenticated 2375 socket.
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: "1"
+  DOCKER_CERT_PATH: "/certs/client"
   DOCKER_DRIVER: overlay2
   FF_NETWORK_PER_BUILD: "true"
 
-services:
-  - docker:dind
+# Run the full scan only on the default branch or a manual ("Run pipeline") trigger.
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "web"
 
-scan:
+dast_scan:
   stage: scan
   image: ubuntu:latest
   services:
     - docker:dind
   before_script:
-    - apt-get update && apt-get install -y wget docker-compose curl
+    - apt-get update && apt-get install -y wget ca-certificates docker.io docker-compose
     - wget -c https://downloads.nightvision.net/binaries/latest/nightvision_latest_linux_amd64.tar.gz -O - | tar -xz
     - mv nightvision /usr/local/bin/
   script:
-    - nightvision swagger extract . -t ${NIGHTVISION_TARGET} --lang java || true
-    - if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; fi
+    # Extract the API spec; fall back to a committed backup but log loudly.
+    - |
+      if nightvision swagger extract ./ --lang spring -t "${NIGHTVISION_APP}"; then
+        echo "Spec extracted from source."
+      else
+        echo "WARNING: swagger extract failed; using backup-openapi-spec.yml." >&2
+        cp backup-openapi-spec.yml openapi-spec.yml
+      fi
+      # Guard on the artifact as well: a zero exit that wrote no spec (e.g. no
+      # routes extracted) still falls back to the committed backup.
+      [ -s openapi-spec.yml ] || cp backup-openapi-spec.yml openapi-spec.yml
     - docker-compose up -d && sleep 15
-    - nightvision scan ${NIGHTVISION_TARGET} --auth ${NIGHTVISION_AUTH} > scan-results.txt
-    - nightvision export sarif -s "$(head -n 1 scan-results.txt)" --swagger-file openapi-spec.yml
-  artifacts:
-    paths:
-      - results.sarif
-      - openapi-spec.yml
-    expire_in: 30 days
-
-report:
-  stage: report
-  image: python:3.9
-  script:
-    # Fetch the canonical SARIF-to-GitLab converter. It reads results.sarif
-    # and writes gitlab_security_report.json in GitLab's report schema.
-    - curl -sSfL https://raw.githubusercontent.com/nvsecurity/nv-public-reference/main/sarif/convert_sarif_to_gitlab.py -o convert_sarif_to_gitlab.py
-    - python3 convert_sarif_to_gitlab.py
+    # Scan, then capture the scan id robustly (extract the UUID; fail if absent).
+    - nightvision scan "${NIGHTVISION_TARGET}" -a "${NIGHTVISION_APP}" --auth "${NIGHTVISION_AUTH}" | tee scan-results.txt
+    - SCAN_ID=$(grep -oiE '[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}' scan-results.txt | head -n1)
+    - 'test -n "${SCAN_ID}" || { echo "ERROR no scan id found" >&2; exit 1; }'
+    # Native GitLab DAST report (no external converter).
+    - nightvision export gitlab -s "${SCAN_ID}" --swagger-file openapi-spec.yml -o gl-dast-report.json
   artifacts:
     reports:
-      sast: gitlab_security_report.json
-  dependencies:
-    - scan
+      dast: gl-dast-report.json
+    paths:
+      - gl-dast-report.json
+    expire_in: 30 days
 ```
 
 ## Azure DevOps
