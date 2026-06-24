@@ -35,8 +35,8 @@ Every NightVision CI pipeline follows this pattern:
 2. Extract API spec from source code (API targets only)
 3. Start the application (private/local targets only)
 4. Run the scan (CLI polls until completion, ~5-15 min)
-5. Export results (SARIF / CSV)
-6. Upload to CI platform (GitHub Security, GitLab SAST, Azure Boards, Jenkins Warnings)
+5. Export results (SARIF / CSV / GitLab DAST)
+6. Upload to CI platform (GitHub Security, GitLab DAST, Azure Boards, Jenkins Warnings)
 ```
 
 ## Prerequisites the user must complete
@@ -193,6 +193,9 @@ nightvision export sarif -s "$SCAN_ID" -o results.sarif
 
 # CSV (for reports, spreadsheets, custom processing)
 nightvision export csv -s "$SCAN_ID" -o results.csv
+
+# GitLab DAST report (for the GitLab Vulnerability dashboard)
+nightvision export gitlab -s "$SCAN_ID" --swagger-file openapi-spec.yml -o gl-dast-report.json
 ```
 
 `--swagger-file` is optional. When provided, SARIF output includes Code Traceback source annotations (file paths and line numbers linking findings to source code). When omitted, the SARIF is still valid but won't contain source locations. Always provide `--swagger-file` for API targets when the spec is available.
@@ -204,7 +207,7 @@ See [references/ci-platforms.md](references/ci-platforms.md) for complete, copy-
 | Platform | Results surface | Upload mechanism |
 |----------|----------------|-----------------|
 | GitHub Actions | Security tab (Code Scanning) | `github/codeql-action/upload-sarif@v3` (needs `permissions: contents: read, security-events: write`) |
-| GitLab CI | Vulnerability dashboard | Convert SARIF to GitLab security report JSON, `artifacts.reports.sast` |
+| GitLab CI | Vulnerability dashboard | `nightvision export gitlab`, `artifacts.reports.dast` |
 | Azure DevOps | Azure Boards work items | `sarif-manager azure create-work-items` |
 | Jenkins | Warnings Next Generation | `recordIssues tool: sarif(pattern: 'results.sarif')` |
 | BitBucket | Pipeline artifacts | SARIF as artifact |
