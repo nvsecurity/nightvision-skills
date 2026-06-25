@@ -119,11 +119,11 @@ workflow:
 
 dast_scan:
   stage: scan
-  image: ubuntu:latest
+  image: ubuntu:24.04
   services:
     - docker:dind
   before_script:
-    - apt-get update && apt-get install -y wget ca-certificates docker.io docker-compose
+    - apt-get update && apt-get install -y wget ca-certificates docker.io docker-compose-v2
     - wget -c https://downloads.nightvision.net/binaries/latest/nightvision_latest_linux_amd64.tar.gz -O - | tar -xz
     - mv nightvision /usr/local/bin/
   script:
@@ -138,9 +138,9 @@ dast_scan:
       # Guard on the artifact as well: a zero exit that wrote no spec (e.g. no
       # routes extracted) still falls back to the committed backup.
       [ -s openapi-spec.yml ] || cp backup-openapi-spec.yml openapi-spec.yml
-    - docker-compose up -d && sleep 15
+    - docker compose up -d && sleep 15
     # Scan, then capture the scan id robustly (extract the UUID; fail if absent).
-    - nightvision scan "${NIGHTVISION_TARGET}" -a "${NIGHTVISION_APP}" --auth "${NIGHTVISION_AUTH}" | tee scan-results.txt
+    - nightvision scan "${NIGHTVISION_TARGET}" --auth "${NIGHTVISION_AUTH}" | tee scan-results.txt
     - SCAN_ID=$(grep -oiE '[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}' scan-results.txt | head -n1)
     - 'test -n "${SCAN_ID}" || { echo "ERROR no scan id found" >&2; exit 1; }'
     # Native GitLab DAST report (no external converter).
