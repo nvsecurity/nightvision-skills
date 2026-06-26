@@ -196,6 +196,10 @@ nightvision export csv -s "$SCAN_ID" -o results.csv
 
 # GitLab DAST report (for the GitLab Vulnerability dashboard)
 nightvision export gitlab -s "$SCAN_ID" --swagger-file openapi-spec.yml -o gl-dast-report.json
+
+# Jira tickets (one per finding; severity sets priority; status changes sync back to findings)
+nightvision export jira -s "$SCAN_ID" --project-key SEC \
+  --base-url https://your-org.atlassian.net --user-email you@example.com --jira-token "$JIRA_TOKEN"
 ```
 
 `--swagger-file` is optional. When provided, SARIF output includes Code Traceback source annotations (file paths and line numbers linking findings to source code). When omitted, the SARIF is still valid but won't contain source locations. Always provide `--swagger-file` for API targets when the spec is available.
