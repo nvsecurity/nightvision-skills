@@ -1,6 +1,6 @@
 {
   "name": "nightvision",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Skills for working with NightVision, a DAST and API Discovery platform that finds exploitable vulnerabilities in web applications and REST APIs",
   "author": {
     "name": "NightVision Engineering",
