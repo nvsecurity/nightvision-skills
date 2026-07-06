@@ -198,6 +198,8 @@ nightvision export csv -s "$SCAN_ID" -o results.csv
 nightvision export gitlab -s "$SCAN_ID" --swagger-file openapi-spec.yml -o gl-dast-report.json
 
 # Jira tickets (one per finding; severity sets priority; status changes sync back to findings)
+# --jira-token is a classic user API token. For an Atlassian service-account token
+# (always scoped), pass --jira-cloud-id <id> instead of --base-url (scopes: read:jira-work, write:jira-work).
 nightvision export jira -s "$SCAN_ID" --project-key SEC \
   --base-url https://your-org.atlassian.net --user-email you@example.com --jira-token "$JIRA_TOKEN"
 ```
