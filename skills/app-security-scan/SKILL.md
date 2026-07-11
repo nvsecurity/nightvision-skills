@@ -36,3 +36,12 @@ Two different things. NightVision account auth is the user's own NightVision tok
 ## Reporting
 
 A terminal `FAILED` scan can still contain valid findings: check the finding count and summarize what it found before calling a run unusable. Never claim the app is secure or scanned unless NightVision results support it. If DAST could not run, report the blocker and the manifest path.
+
+## Remediation (find-to-fix)
+
+When the user wants findings fixed and not just reported, use what each finding actually carries. It varies by class, so do not assume every finding gives you a source line or a parameter:
+
+- Request-level findings (SQL injection, XSS, command injection, and similar) carry a source `file:line`, the endpoint, the vulnerable parameter, and the proof-of-concept payload. The `file:line` is the DAST-observable entry point (the endpoint handler), not always the sink: open it, follow the named parameter into the service or repository that uses it, find the sink, and apply the standard fix for the class (a parameterized query for SQL injection, output encoding for reflected XSS), matching the codebase's existing patterns.
+- Response/config-level findings (missing security headers, weak authentication method, error or stack-trace disclosure) usually have no per-line source location; fix them in the app's security configuration (the header/filter/security config), not at one handler.
+
+NightVision does not hand you a patch (`fixes`/`codeFlows` in the SARIF are empty), and not every finding maps to source, so treat this as a locate-and-fix aid. Always re-scan with `run-app-security-scan` and confirm the finding is gone before calling it fixed. Remediation is a follow-on to the scan, not a replacement: scan first, and only change code when the user asks for fixes.
