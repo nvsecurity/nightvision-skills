@@ -9,6 +9,20 @@ allowed-tools: Bash, Read, Grep, mcp__nightvision__auth-status, mcp__nightvision
 
 Run a real DAST scan against an app you just built or changed. API Discovery runs first when the backend language is supported, because it improves coverage and lets findings trace back to a source file and line (Code Traceback). DAST is the expected outcome on every run, not just a generated spec.
 
+## Best-supported languages and frameworks
+
+API Discovery generates the OpenAPI spec that makes findings trace back to source, so source-linked results are strongest for the languages and frameworks it extracts well (all GA, static analysis, nothing leaves the machine):
+
+- Python: Django/DRF, Flask, FastAPI
+- JavaScript/TypeScript: Express, NestJS
+- Java: Spring Boot, JAX-RS/Jersey, Micronaut, Quarkus (Jakarta REST generally)
+- C#: ASP.NET Core
+- Go: router-based only (Gin, httprouter); `net/http` and Echo/Chi/Fiber are not extracted
+- Ruby: Ruby on Rails only
+- PHP: Laravel
+
+Outside this set, or for a non-REST or spec-less app, still run the scan: DAST works against any reachable target as a WEB target, you just get findings without the source `file:line` traceback. Source-based discovery is REST/OpenAPI only; the DAST scanner itself is protocol-agnostic.
+
 ## Workflow
 
 1. Know the app's URL. You are running on the developer's machine with the app's source in front of you, so you know how it serves. If it is not already running, start it with its own command (`npm run dev`, `docker compose up`, the framework dev server). Pass that URL as `target_url`. Do not ask the harness to guess it.
