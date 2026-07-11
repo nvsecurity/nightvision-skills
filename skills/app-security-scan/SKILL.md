@@ -25,14 +25,15 @@ Outside this set, or for a non-REST or spec-less app, still run the scan: DAST w
 
 ## Workflow
 
-1. Know the app's URL. You are running on the developer's machine with the app's source in front of you, so you know how it serves. If it is not already running, start it with its own command (`npm run dev`, `docker compose up`, the framework dev server). Pass that URL as `target_url`. Do not ask the harness to guess it.
-2. Call `run-app-security-scan` with `project_path`, `target_url`, the NightVision project, and the app-auth mode (see Auth). One call does preflight, API Discovery, target create/update, DAST start, and writes `.nightvision/manifest.json`.
-3. It returns a `scan_id` quickly (`wait` defaults to false). DAST commonly runs longer than 10 minutes, so do not assume it finished.
-4. Poll `wait-for-scan` or `get-scan-status` until a terminal status.
-5. Export SARIF and summarize: call `export-sarif` (the harness attaches the discovered spec so findings carry endpoint + source file:line) and `summarize-scan-findings`. Report the scan id, target, project, finding counts, and the top findings with endpoint, source file:line, evidence, and a suggested fix.
-6. The manifest is the local record and stays in the repo. Treat the work as incomplete until `.nightvision/manifest.json` holds a `scan_id`, or you have reported a concrete blocker.
+1. Locate the app's source directory and pass it as `project_path`. Do not rely on the current working directory: a developer usually launches you from their home directory, not the repo, and API Discovery reads `project_path` to generate the spec that links findings to source. If you are not already in the repo, find it (the app's git root / where its source lives) and pass that absolute path. Running against the home directory is refused with `project_path_not_app_source`.
+2. Know the app's URL. You are running on the developer's machine with the app's source in front of you, so you know how it serves. If it is not already running, start it with its own command (`npm run dev`, `docker compose up`, the framework dev server). Pass that URL as `target_url`. Do not ask the harness to guess it.
+3. Call `run-app-security-scan` with `project_path`, `target_url`, the NightVision project, and the app-auth mode (see Auth). One call does preflight, API Discovery, target create/update, DAST start, and writes `.nightvision/manifest.json`. Always route the scan through this one harness call, even when the user already has a NightVision target or credential set up: pass their existing project and `auth`/`auth_id`, and the harness reuses and updates that target and refreshes API Discovery so its spec is not stale. Do not hand-assemble a scan from `create-target` / `start-scan` / `list-targets`; that path skips the fresh discovery and is how a scan silently exercises a stale spec.
+4. It returns a `scan_id` quickly (`wait` defaults to false). DAST commonly runs longer than 10 minutes, so do not assume it finished.
+5. Poll `wait-for-scan` or `get-scan-status` until a terminal status.
+6. Export SARIF and summarize: call `export-sarif` (the harness attaches the discovered spec so findings carry endpoint + source file:line) and `summarize-scan-findings`. Report the scan id, target, project, finding counts, and the top findings with endpoint, source file:line, evidence, and a suggested fix.
+7. The manifest is the local record and stays in the repo. Treat the work as incomplete until `.nightvision/manifest.json` holds a `scan_id`, or you have reported a concrete blocker.
 
-Resolve blockers the harness reports rather than working around them: `not_authenticated` / `invalid_or_expired_token` (auth), `target_url_required` (you did not pass the URL), `runtime_url_not_reachable` (the app is not up, start it), `nightvision_project_required`. Use `dry_run: true` when the user only wants a readiness check without creating targets or starting a scan.
+Resolve blockers the harness reports rather than working around them: `not_authenticated` / `invalid_or_expired_token` (auth), `target_url_required` (you did not pass the URL), `runtime_url_not_reachable` (the app is not up, start it), `nightvision_project_required`, `project_path_not_app_source` (you passed the home/root directory; pass the app's source directory). Use `dry_run: true` when the user only wants a readiness check without creating targets or starting a scan.
 
 ## Unattended mode
 
@@ -50,6 +51,8 @@ Two different things. NightVision account auth is the user's own NightVision tok
 ## Reporting
 
 A terminal `FAILED` scan can still contain valid findings: check the finding count and summarize what it found before calling a run unusable. Never claim the app is secure or scanned unless NightVision results support it. If DAST could not run, report the blocker and the manifest path.
+
+Coverage floor: a scan that "succeeded" but exercised no endpoints is a setup failure, not a clean bill of health. If a full scan returns zero findings, or only the "target is online" informational check, or the harness warns `coverage_suspect`, treat it as suspect: the spec was stale, API Discovery did not run against current source, or the target was scanned as a bare WEB target. Do not report the app as secure. Re-run `run-app-security-scan` with `project_path` set to the app's source directory so discovery regenerates the spec, confirm the scan tested real endpoints, and only then report. A known-featureful app returning nothing is the tell.
 
 ## Remediation (find-to-fix)
 
