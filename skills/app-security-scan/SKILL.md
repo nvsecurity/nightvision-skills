@@ -11,17 +11,16 @@ Run a real DAST scan against an app you just built or changed. API Discovery run
 
 ## Best-supported languages and frameworks
 
-API Discovery generates the OpenAPI spec that makes findings trace back to source, so source-linked results are strongest for the languages and frameworks it extracts well (all GA, static analysis, nothing leaves the machine):
+API Discovery uses deterministic static analysis to generate an OpenAPI spec for supported codebases. Source-linked results are strongest for the empirically verified languages and frameworks below:
 
-- Python: Django/DRF, Flask, FastAPI
-- JavaScript/TypeScript: Express, NestJS
-- Java: Spring Boot, JAX-RS/Jersey, Micronaut, Quarkus (Jakarta REST generally)
-- C#: ASP.NET Core
-- Go: router-based only (Gin, httprouter); `net/http` and Echo/Chi/Fiber are not extracted
-- Ruby: Ruby on Rails only
-- PHP: Laravel
+- Python: Django, Django REST Framework, Flask, Flask-RESTful, FastAPI
+- JavaScript/TypeScript: Express, NestJS, Fastify
+- Java: Spring Boot, JAX-RS/Jersey, Micronaut, Java EE/Jakarta EE
+- C#: ASP.NET Core controllers and minimal APIs
+- Go: Gin, httprouter, and experimental `net/http` support
+- Ruby: Rails and Grape
 
-Outside this set, or for a non-REST or spec-less app, still run the scan: DAST works against any reachable target as a WEB target, you just get findings without the source `file:line` traceback. Source-based discovery is REST/OpenAPI only; the DAST scanner itself is protocol-agnostic.
+Treat frameworks outside this list, including PHP frameworks, as verify-first for source discovery. Still run DAST against reachable web apps and APIs as a WEB target when discovery is unsupported or produces no spec, but report that findings may not include source `file:line` traceback. Source-based discovery is REST/OpenAPI only.
 
 ## Workflow
 

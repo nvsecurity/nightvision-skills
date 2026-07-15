@@ -14,13 +14,13 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Open_Standard-6f42c1.svg)](https://agentskills.io)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
-[![NightVision](https://img.shields.io/badge/NightVision-DAST-orange)](https://www.nightvision.net)
+[![NightVision](https://img.shields.io/badge/NightVision-DAST-orange)](https://nightviz.ai)
 
 </div>
 
 ---
 
-[NightVision](https://www.nightvision.net) is a white-box-assisted DAST platform that combines **API Discovery** (static analysis to extract OpenAPI specs from source code), **dynamic scanning** (ZAP + Nuclei engines), and **Code Traceback** (tracing vulnerabilities back to exact source locations) to find exploitable vulnerabilities in web applications and REST APIs.
+[NightVision](https://nightviz.ai) is a developer-first DAST and API security platform. It dynamically tests running web applications and APIs, discovers REST endpoints from supported source code, and connects validated findings to source locations when that context is available.
 
 These [Agent Skills](https://agentskills.io) give your coding agent the ability to run NightVision scans, triage results, and integrate security testing into your CI/CD pipelines, all from natural language. Agent Skills are an open format supported by Claude Code, OpenAI Codex, Cursor, and other agentic tools, so the same skill folders work across whichever agent you use.
 
