@@ -1,7 +1,6 @@
 ---
 name: app-security-scan
-description: DAST-first NightVision scan for an app you just built or changed. Use when a user (or an org CLAUDE.md rule) wants a local, private, staging, or internal web app/API security-scanned. Drives the NightVision MCP `run-app-security-scan` harness.
-user-invocable: true
+description: DAST-first NightVision scan for an app you just built or changed. Use when a user, or a project or org agent-instructions rule, wants a local, private, staging, or internal web app/API security-scanned. Drives the NightVision MCP `run-app-security-scan` harness.
 allowed-tools: Bash, Read, Grep, mcp__nightvision__auth-status, mcp__nightvision__preflight-app, mcp__nightvision__run-app-security-scan, mcp__nightvision__wait-for-scan, mcp__nightvision__get-scan-status, mcp__nightvision__summarize-scan-findings, mcp__nightvision__export-sarif
 ---
 
@@ -45,11 +44,11 @@ Resolve blockers the harness reports rather than working around them: `not_authe
 
 ## Unattended mode
 
-When an org CLAUDE.md rule triggers this after an app is built (no human watching): start the app yourself, rely on `NIGHTVISION_DEFAULT_PROJECT` and the environment's NightVision token (never prompt for them; a missing one is a blocker to report), and close the loop before ending your turn. Do not leave a scan running with nobody watching: poll to a terminal status, then export SARIF and summarize. If you cannot start the app or auth is missing, report that as the concrete blocker instead of silently skipping the scan.
+When a project agent-instructions rule triggers this after an app is built (no human watching): start the app yourself, rely on `NIGHTVISION_DEFAULT_PROJECT` and the environment's NightVision token (never prompt for them; a missing one is a blocker to report), and close the loop before ending your turn. Do not leave a scan running with nobody watching: poll to a terminal status, then export SARIF and summarize. If you cannot start the app or auth is missing, report that as the concrete blocker instead of silently skipping the scan.
 
 ## Auth
 
-Two different things. NightVision account auth is the user's own NightVision token; never paste a shared token into CLAUDE.md, a repo file, or a team config, each user authenticates as themselves. Target-app auth is how DAST logs into the app under test, passed to the scan as:
+Two different things. NightVision account auth is the user's own NightVision token; never paste a shared token into your agent-instructions file (CLAUDE.md, AGENTS.md), a repo file, or a team config, each user authenticates as themselves. Target-app auth is how DAST logs into the app under test, passed to the scan as:
 
 - `no_auth: true` to scan unauthenticated (say so; it may miss authenticated functionality).
 - `auth` (named profile) or `auth_id` (credential UUID) for an existing NightVision app-auth credential.

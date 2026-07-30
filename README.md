@@ -100,9 +100,9 @@ In Claude Code, invoke skills directly with slash commands:
 /ci-cd-integration
 ```
 
-## Enterprise CLAUDE.md Block
+## Enterprise agent-instructions block
 
-For organization-wide Claude instructions, use a block like this and pair it with a configured NightVision MCP server. Do not put shared NightVision credentials in this block.
+For organization-wide agent instructions, use a block like this and pair it with a configured NightVision MCP server. Put it in the instructions file your agent actually reads: `CLAUDE.md` for Claude Code, `AGENTS.md` for Codex and Cursor. Claude Code does not read `AGENTS.md`, so if you already keep one, add `@AGENTS.md` inside `CLAUDE.md` rather than maintaining the text twice. Do not put shared NightVision credentials in this block.
 
 This block is written for **unattended enforcement**: a population of developers (including non-technical ones) who build apps with an AI agent and will not think to run security testing themselves. It is phrased as a completion gate, not a suggestion, and it closes the loop so results reach a person even though nobody will ask for them. Pre-set `NIGHTVISION_DEFAULT_PROJECT` (and the CLI auth) in the managed MCP server config so the agent never has to ask the developer a NightVision question.
 
@@ -123,7 +123,7 @@ Auth: every NightVision action runs under the developer's own NightVision accoun
 Completion contract: work on a new or materially changed app is not complete until either `.nightvision/manifest.json` exists with a NightVision DAST scan ID, or you have stated the exact blocker that prevented DAST (app would not start, no project, not authenticated, target unreachable). A terminal `FAILED` scan can still contain valid findings, so check issue counts and export/summarize before treating a run as unusable. Report the scan ID, the top findings, and the artifact paths to the developer. Never claim an app was scanned, secured, or free of vulnerabilities unless NightVision results support it.
 ```
 
-> Trigger reliability note: a CLAUDE.md instruction makes the agent scan reliably in the common case, but it is probabilistic, not guaranteed, on every single turn. For hard enforcement across a fleet, pair this block with a harness-level gate (for example a Stop/PreCompact hook or a CI check) that fails the turn/build when a new or changed app has no `.nightvision/manifest.json` with a scan ID. The block above is what makes the agent do the right thing; the hook is what guarantees it.
+> Trigger reliability note: an agent-instructions rule makes the agent scan reliably in the common case, but it is probabilistic, not guaranteed, on every single turn. For hard enforcement across a fleet, pair this block with a harness-level gate (for example a Stop/PreCompact hook or a CI check) that fails the turn/build when a new or changed app has no `.nightvision/manifest.json` with a scan ID. The block above is what makes the agent do the right thing; the hook is what guarantees it.
 
 ## Structure
 

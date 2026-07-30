@@ -1,7 +1,6 @@
 ---
 name: scan-configuration
 description: Guide for agents to help users configure NightVision DAST scans. Use when creating targets, setting up authentication (Playwright, headers, cookies), recording HTTP traffic, managing projects, configuring scope exclusions, or preparing private network scans.
-user-invocable: true
 allowed-tools: Bash
 ---
 

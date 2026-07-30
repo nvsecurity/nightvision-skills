@@ -1,7 +1,6 @@
 ---
 name: ci-cd-integration
 description: Guide for agents to help users integrate NightVision DAST scanning into CI/CD pipelines. Use when setting up security scans in GitHub Actions, GitLab CI, Azure DevOps, Jenkins, BitBucket, or JFrog pipelines, configuring NightVision tokens, creating targets, running scans, exporting results as SARIF/CSV, or detecting API breaking changes.
-user-invocable: true
 allowed-tools: Bash
 ---
 

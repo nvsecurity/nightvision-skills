@@ -1,7 +1,6 @@
 ---
 name: api-discovery
 description: Guide for agents to help users extract OpenAPI specs from source code using NightVision API Discovery. Use when running swagger extract, identifying framework support, troubleshooting extraction, handling unresolved variables, comparing API specs, or understanding Code Traceback.
-user-invocable: true
 allowed-tools: Bash
 ---
 
@@ -154,4 +153,4 @@ This is why using NightVision-generated specs (vs. hand-written ones) significan
 | Extraction fails entirely | Syntax errors in source, missing files | Use `--diagnostics` to get language-level error details |
 | Spec missing sub-routes | Code in subdirectories not scanned | Pass multiple paths: `nightvision swagger extract ./src ./lib` |
 
-For unsupported frameworks or components, contact support@nightvision.net.
+For unsupported frameworks or components, contact support@nightviz.ai.
