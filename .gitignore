@@ -1,2 +1,12 @@
 .claude/
 .DS_Store
+
+# Local agent config and work products
+/.agent-sandbox-config/
+/.claude-sandbox-config/
+/.codex-sandbox-config/
+/analysis/
+# Scratch files an agent leaves at the repository root. Rooted so a legitimate
+# file of the same name deeper in the tree is unaffected.
+/prompt.txt
+/session-*.txt.gz
