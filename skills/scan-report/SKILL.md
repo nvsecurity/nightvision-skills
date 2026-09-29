@@ -53,6 +53,8 @@ Set `include_evidence: true` only when the user asks for raw evidence for intern
 | `SCAN_NO_FINDINGS` | The scan ended unsuccessfully with nothing to report | Report the scan status; re-run the scan |
 | `SCAN_ID_REQUIRED` / `PROJECT_REQUIRED` | Scope is missing | Find the scan or project as above |
 | `BASELINE_INVALID` | The `baseline_scan_id` you passed is the same scan, newer, another target, or did not complete | Omit it to use the previous completed scan of the same target |
-| `not_authenticated` | NightVision auth is missing | Follow `auth-status` guidance |
+| `NOT_AUTHENTICATED` (and other auth codes with blocker `not_authenticated`) | NightVision auth is missing or expired | Follow the `login_command` in the error details, or `auth-status` guidance |
+| `NIGHTVISION_API_UNAVAILABLE` | The NightVision API could not be reached | Retry later; do not report the scan as clean |
+| `EXPORT_REPORT_FAILED` | Unexpected error while building the report | Relay the message; check the scan id and retry |
 
-A `partial` status with an HTML file means no browser was available to print the PDF. The HTML is the complete report: the user can open it in any browser and print to PDF, or set `NIGHTVISION_CHROME_PATH` and retry.
+A `partial` status with an HTML file means the PDF could not be printed: no Chrome, Chromium, Edge, or Brave was found, or printing failed or timed out. Relay the warning text, which says which. The HTML is the complete report, so the user can open it in any browser and print to PDF. When no browser was found, setting `NIGHTVISION_CHROME_PATH` to one and retrying also works.
