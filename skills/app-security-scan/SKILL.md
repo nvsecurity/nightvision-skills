@@ -57,7 +57,7 @@ Two different things. NightVision account auth is the user's own NightVision tok
 
 ## Reporting
 
-A terminal `FAILED` scan can still contain valid findings: check the finding count and summarize what it found before calling a run unusable. Never claim the app is secure or scanned unless NightVision results support it. If DAST could not run, report the blocker and the manifest path.
+A terminal `FAILED` scan can still contain valid findings: check the finding count and summarize what it found before calling a run unusable. When the user wants something to share (a PDF, a report for a manager, CISO, or another team), hand off to the `scan-report` skill with the same `scan_id` and `project_path`. Never claim the app is secure or scanned unless NightVision results support it. If DAST could not run, report the blocker and the manifest path.
 
 Coverage floor: a scan that "succeeded" but exercised no endpoints is a setup failure, not a clean bill of health. If a full scan returns zero findings, or only the "target is online" informational check, or the harness sets `coverage_suspect: true` on the scan result, treat it as suspect: the spec was stale, API Discovery did not run against current source, or the target was scanned as a bare WEB target. Do not report the app as secure. Re-run `run-app-security-scan` with `project_path` set to the app's source directory so discovery regenerates the spec, confirm the scan tested real endpoints, and only then report. A known-featureful app returning nothing is the tell.
 
