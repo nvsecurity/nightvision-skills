@@ -52,6 +52,7 @@ Set `include_evidence: true` only when the user asks for raw evidence for intern
 | `SCAN_NOT_TERMINAL` | The scan is still running | Wait for it (`get-scan-status`), then retry |
 | `SCAN_NO_FINDINGS` | The scan ended unsuccessfully with nothing to report | Report the scan status; re-run the scan |
 | `SCAN_ID_REQUIRED` / `PROJECT_REQUIRED` | Scope is missing | Find the scan or project as above |
+| `BASELINE_INVALID` | The `baseline_scan_id` you passed is the same scan, newer, another target, or did not complete | Omit it to use the previous completed scan of the same target |
 | `not_authenticated` | NightVision auth is missing | Follow `auth-status` guidance |
 
 A `partial` status with an HTML file means no browser was available to print the PDF. The HTML is the complete report: the user can open it in any browser and print to PDF, or set `NIGHTVISION_CHROME_PATH` and retry.
