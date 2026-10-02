@@ -21,7 +21,7 @@ When a user asks to configure a scan:
 7. **Configure scope** — set exclusions to avoid scanning health checks, admin endpoints, etc.
 8. **Verify readiness** — confirm the target is reachable and the auth works
 
-**Related skills:** Use `ci-cd-integration` for pipeline setup, `api-discovery` for spec extraction, `scan-triage` for interpreting results.
+**Related skills:** Use `ci-cd-integration` for pipeline setup, `source-intelligence` for spec extraction, `scan-triage` for interpreting results.
 
 ## Projects
 
@@ -82,7 +82,7 @@ nightvision target list -p my-project
 For API targets, the spec can come from:
 - **Local file** (`--spec-file`) — JSON or YAML OpenAPI/Swagger or Postman collection
 - **Remote URL** (`--spec-url`) — publicly accessible spec endpoint
-- **API Discovery** (`nightvision swagger extract`) — extracted from source code (see the `api-discovery` skill)
+- **Source Intelligence** (`nightvision openapi extract`) — extracted from source code (see the `source-intelligence` skill)
 - **Postman conversion** — convert Postman collections to OpenAPI with `p2o` (npm: `postman-to-openapi`)
 
 ## Authentication

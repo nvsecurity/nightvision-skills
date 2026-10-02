@@ -21,7 +21,7 @@ When a user asks for help with scan results:
 7. **Suggest remediation** — provide concrete fix patterns for the vulnerability class (see [references/vulnerability-guide.md](references/vulnerability-guide.md))
 8. **Help prioritize** — triage by severity and exploitability
 
-**Related skills:** Use `scan-configuration` for setting up scans, `ci-cd-integration` for pipeline setup, `api-discovery` for spec extraction.
+**Related skills:** Use `scan-configuration` for setting up scans, `ci-cd-integration` for pipeline setup, `source-intelligence` for spec extraction.
 
 ## Exporting results
 
@@ -64,7 +64,7 @@ The agent should read the SARIF JSON, iterate over `results[]`, and explain each
 
 ### Code Traceback in SARIF
 
-When API Discovery generated the OpenAPI spec, it annotated endpoints with source file paths and line numbers. These appear in SARIF as `physicalLocation` entries, letting the agent navigate directly to the vulnerable code:
+When Source Intelligence generated the OpenAPI spec, it annotated endpoints with source file paths and line numbers. These appear in SARIF as `physicalLocation` entries, letting the agent navigate directly to the vulnerable code:
 
 ```json
 "locations": [{
