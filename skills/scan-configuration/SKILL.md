@@ -82,7 +82,7 @@ nightvision target list -p my-project
 For API targets, the spec can come from:
 - **Local file** (`--spec-file`) — JSON or YAML OpenAPI/Swagger or Postman collection
 - **Remote URL** (`--spec-url`) — publicly accessible spec endpoint
-- **API Discovery** (`nightvision openapi extract`) — extracted from source code (see the `source-intelligence` skill)
+- **Source Intelligence** (`nightvision openapi extract`) — extracted from source code (see the `source-intelligence` skill)
 - **Postman conversion** — convert Postman collections to OpenAPI with `p2o` (npm: `postman-to-openapi`)
 
 ## Authentication

@@ -1,12 +1,12 @@
 ---
 name: source-intelligence
-description: Guide for agents to help users extract OpenAPI specs from source code using NightVision API Discovery. Use when running openapi extract (also spelled swagger extract), identifying framework support, troubleshooting extraction, handling unresolved variables, comparing API specs, or understanding Code Traceback.
+description: Guide for agents to help users extract OpenAPI specs from source code using NightVision Source Intelligence. Use when running openapi extract (also spelled swagger extract), identifying framework support, troubleshooting extraction, handling unresolved variables, comparing API specs, or understanding Code Traceback.
 allowed-tools: Bash
 ---
 
-# NightVision API Discovery
+# NightVision Source Intelligence
 
-Use this skill when helping users generate OpenAPI specifications from their source code using `nightvision openapi extract`. API Discovery performs static analysis — no running application or compilation needed — and annotates the spec with source file paths and line numbers (Code Traceback) so that vulnerabilities found during DAST scans trace back to exact code locations.
+Use this skill when helping users generate OpenAPI specifications from their source code using `nightvision openapi extract`. Source Intelligence performs static analysis — no running application or compilation needed — and annotates the spec with source file paths and line numbers (Code Traceback) so that vulnerabilities found during DAST scans trace back to exact code locations.
 
 The `nightvision openapi` command group needs CLI 0.18.0 or later. On an earlier release (`nightvision version`), use `nightvision swagger` in its place; later releases accept both names.
 

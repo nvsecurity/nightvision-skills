@@ -6,7 +6,7 @@ allowed-tools: Bash
 
 # NightVision CI/CD Integration
 
-Use this skill when helping users add NightVision security scanning to their CI/CD pipelines. NightVision is a white-box-assisted DAST tool that finds exploitable vulnerabilities in web applications and REST APIs. It combines API Discovery (static analysis to extract OpenAPI specs from source code) with dynamic scanning (ZAP + Nuclei engines), and traces vulnerabilities back to exact source code locations (Code Traceback).
+Use this skill when helping users add NightVision security scanning to their CI/CD pipelines. NightVision is a white-box-assisted DAST tool that finds exploitable vulnerabilities in web applications and REST APIs. It combines Source Intelligence (static analysis to extract OpenAPI specs from source code) with dynamic scanning (ZAP + Nuclei engines), and traces vulnerabilities back to exact source code locations (Code Traceback).
 
 ## Agent workflow
 
@@ -18,7 +18,7 @@ When a user asks to set up NightVision in their pipeline:
    - Target URL (staging/production endpoint to scan)
    - Target type — web app or API?
    - Does the app require authentication to scan?
-   - What language is the backend? (needed for API Discovery)
+   - What language is the backend? (needed for Source Intelligence)
    - Have they already created a NightVision project, target, and token?
 4. **Tell the user what they must do locally** — some steps require interactive browser sessions that the agent cannot perform (see Prerequisites below)
 5. **Generate the pipeline config** — adapt the patterns below and the platform-specific examples in [references/ci-platforms.md](references/ci-platforms.md) to the user's repo, substituting their target name, language, app startup method, and CI platform conventions
@@ -102,7 +102,7 @@ All config keys accept env vars with the `NIGHTVISION_` prefix (hyphens become u
 
 Most `list` and `get` commands default to text output. Use `--format json` (or `-F json`) for machine-parseable output, or `--format table` for tabular display.
 
-## API Discovery (spec extraction from source code)
+## Source Intelligence (spec extraction from source code)
 
 For API targets, extract OpenAPI specs via static analysis. Supports Go, Python, Java, Ruby, C#, JavaScript.
 
@@ -125,7 +125,7 @@ if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; 
 
 ### Code Traceback
 
-When API Discovery generates the spec, it annotates endpoints with file paths and line numbers. Vulnerabilities found during scanning trace back to exact source locations. This powers the file/line links in GitHub Security Alerts, Azure Boards work items, and similar CI integrations.
+When Source Intelligence generates the spec, it annotates endpoints with file paths and line numbers. Vulnerabilities found during scanning trace back to exact source locations. This powers the file/line links in GitHub Security Alerts, Azure Boards work items, and similar CI integrations.
 
 ## Running scans
 

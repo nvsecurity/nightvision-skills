@@ -1,6 +1,6 @@
 # Framework Support Matrix
 
-Detailed component coverage per language and framework for NightVision API Discovery.
+Detailed component coverage per language and framework for NightVision Source Intelligence.
 
 ## Python (`--lang python`)
 

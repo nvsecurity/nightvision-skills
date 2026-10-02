@@ -64,7 +64,7 @@ The agent should read the SARIF JSON, iterate over `results[]`, and explain each
 
 ### Code Traceback in SARIF
 
-When API Discovery generated the OpenAPI spec, it annotated endpoints with source file paths and line numbers. These appear in SARIF as `physicalLocation` entries, letting the agent navigate directly to the vulnerable code:
+When Source Intelligence generated the OpenAPI spec, it annotated endpoints with source file paths and line numbers. These appear in SARIF as `physicalLocation` entries, letting the agent navigate directly to the vulnerable code:
 
 ```json
 "locations": [{
