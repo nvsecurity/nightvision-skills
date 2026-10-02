@@ -72,7 +72,7 @@ Tool-specific shortcuts:
 | **`scan-configuration`** | Set up DAST scans — create targets, configure authentication (Playwright, headers, cookies), manage projects, define scope exclusions, and prepare private network scans |
 | **`scan-report`** | Generate a shareable PDF security report: an executive summary for AppSec and leadership plus a findings appendix for developers, for one scan, a scan compared with the previous one, or a whole project |
 | **`scan-triage`** | Interpret scan results — read SARIF/CSV findings, understand vulnerabilities, locate the vulnerable code, validate with curl, prioritize by severity, suggest fixes, and mark false positives |
-| **`api-discovery`** | Extract OpenAPI specs from source code via static analysis, troubleshoot extraction issues, compare specs across versions, and leverage Code Traceback |
+| **`source-intelligence`** | Extract OpenAPI specs from source code via static analysis, troubleshoot extraction issues, compare specs across versions, and leverage Code Traceback |
 | **`ci-cd-integration`** | Wire NightVision into your pipeline — GitHub Actions, GitLab CI, Azure DevOps, Jenkins, BitBucket, and JFrog with SARIF/CSV export and breaking-change detection |
 
 ### Example Usage
@@ -100,9 +100,11 @@ In Claude Code, invoke skills directly with slash commands:
 /scan-configuration
 /scan-report
 /scan-triage
-/api-discovery
+/source-intelligence
 /ci-cd-integration
 ```
+
+`/api-discovery`, the former name of `/source-intelligence`, still works.
 
 ## Enterprise agent-instructions block
 
@@ -136,9 +138,11 @@ nightvision-skills/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── skills/
+│   ├── api-discovery/
+│   │   └── SKILL.md
 │   ├── app-security-scan/
 │   │   └── SKILL.md
-│   ├── api-discovery/
+│   ├── source-intelligence/
 │   │   ├── SKILL.md
 │   │   └── references/
 │   ├── ci-cd-integration/

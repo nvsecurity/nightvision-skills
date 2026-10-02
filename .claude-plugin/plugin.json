@@ -10,5 +10,5 @@
   "homepage": "https://nightviz.ai",
   "repository": "https://github.com/nvsecurity/nightvision-skills",
   "license": "Apache-2.0",
-  "keywords": ["dast", "api-discovery", "security-scanning", "ci-cd", "openapi", "vulnerability-detection"]
+  "keywords": ["dast", "api-discovery", "source-intelligence", "security-scanning", "ci-cd", "openapi", "vulnerability-detection"]
 }

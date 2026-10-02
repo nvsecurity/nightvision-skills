@@ -23,7 +23,7 @@ When a user asks to set up NightVision in their pipeline:
 4. **Tell the user what they must do locally** — some steps require interactive browser sessions that the agent cannot perform (see Prerequisites below)
 5. **Generate the pipeline config** — adapt the patterns below and the platform-specific examples in [references/ci-platforms.md](references/ci-platforms.md) to the user's repo, substituting their target name, language, app startup method, and CI platform conventions
 
-**Related skills:** Use `scan-configuration` for detailed target/auth setup, `api-discovery` for spec extraction details, `scan-triage` for interpreting results.
+**Related skills:** Use `scan-configuration` for detailed target/auth setup, `source-intelligence` for spec extraction details, `scan-triage` for interpreting results.
 
 ## Pipeline structure
 

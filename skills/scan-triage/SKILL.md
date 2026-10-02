@@ -21,7 +21,7 @@ When a user asks for help with scan results:
 7. **Suggest remediation** — provide concrete fix patterns for the vulnerability class (see [references/vulnerability-guide.md](references/vulnerability-guide.md))
 8. **Help prioritize** — triage by severity and exploitability
 
-**Related skills:** Use `scan-configuration` for setting up scans, `ci-cd-integration` for pipeline setup, `api-discovery` for spec extraction.
+**Related skills:** Use `scan-configuration` for setting up scans, `ci-cd-integration` for pipeline setup, `source-intelligence` for spec extraction.
 
 ## Exporting results
 
