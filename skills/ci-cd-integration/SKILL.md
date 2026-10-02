@@ -108,18 +108,18 @@ For API targets, extract OpenAPI specs via static analysis. Supports Go, Python,
 
 ```bash
 # Extract and upload to a target
-nightvision swagger extract . -t my-api -p my-project --lang python
+nightvision openapi extract . -t my-api -p my-project --lang python
 
 # Extract locally without uploading
-nightvision swagger extract . -o openapi-spec.yml --lang java --no-upload
+nightvision openapi extract . -o openapi-spec.yml --lang java --no-upload
 
 # Compare specs for breaking changes (useful in PR checks)
-nightvision swagger diff old-spec.yml new-spec.yml
+nightvision openapi diff old-spec.yml new-spec.yml
 ```
 
 **Important CI pattern — extraction fallback:** Extraction can fail if language detection fails. Always use:
 ```bash
-nightvision swagger extract . -t $TARGET --lang java || true
+nightvision openapi extract . -t $TARGET --lang java || true
 if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; fi
 ```
 

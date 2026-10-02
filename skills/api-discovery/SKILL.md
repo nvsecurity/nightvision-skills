@@ -1,12 +1,14 @@
 ---
 name: api-discovery
-description: Guide for agents to help users extract OpenAPI specs from source code using NightVision API Discovery. Use when running swagger extract, identifying framework support, troubleshooting extraction, handling unresolved variables, comparing API specs, or understanding Code Traceback.
+description: Guide for agents to help users extract OpenAPI specs from source code using NightVision API Discovery. Use when running openapi extract (also spelled swagger extract), identifying framework support, troubleshooting extraction, handling unresolved variables, comparing API specs, or understanding Code Traceback.
 allowed-tools: Bash
 ---
 
 # NightVision API Discovery
 
-Use this skill when helping users generate OpenAPI specifications from their source code using `nightvision swagger extract`. API Discovery performs static analysis — no running application or compilation needed — and annotates the spec with source file paths and line numbers (Code Traceback) so that vulnerabilities found during DAST scans trace back to exact code locations.
+Use this skill when helping users generate OpenAPI specifications from their source code using `nightvision openapi extract`. API Discovery performs static analysis — no running application or compilation needed — and annotates the spec with source file paths and line numbers (Code Traceback) so that vulnerabilities found during DAST scans trace back to exact code locations.
+
+The `nightvision openapi` command group needs CLI 0.18.0 or later. On an earlier release (`nightvision version`), use `nightvision swagger` in its place; later releases accept both names.
 
 ## Agent workflow
 
@@ -14,9 +16,9 @@ When a user asks to extract or document their API:
 
 1. **Check prerequisites** — verify the NightVision CLI is available (`nightvision --help`)
 2. **Examine the repo** — identify the backend language and web framework to determine the `--lang` flag and whether the framework is supported (see [references/framework-support.md](references/framework-support.md))
-3. **Run extraction** — execute `nightvision swagger extract` with the appropriate flags. On success, the CLI prints `"Swagger file extracted successfully."` and writes the spec to the output path (default: `openapi-spec.yml`)
+3. **Run extraction** — execute `nightvision openapi extract` with the appropriate flags. On success, the CLI prints `"Swagger file extracted successfully."` and writes the spec to the output path (default: `openapi-spec.yml`)
 4. **Review the output** — read the generated spec to check completeness. Handle unresolved variables if `nv.config` was created alongside the spec
-5. **Compare coverage** — if the user has an existing spec, run `nightvision swagger diff` to show what was discovered vs. what was documented
+5. **Compare coverage** — if the user has an existing spec, run `nightvision openapi diff` to show what was discovered vs. what was documented
 6. **Upload to target** — attach the spec to a NightVision target for scanning
 
 **Related skills:** Use `scan-configuration` for target/auth setup, `ci-cd-integration` for pipeline integration, `scan-triage` for interpreting scan results.
@@ -38,28 +40,28 @@ See [references/framework-support.md](references/framework-support.md) for detai
 
 ```bash
 # Basic extraction (output defaults to openapi-spec.yml)
-nightvision swagger extract . --lang python
+nightvision openapi extract . --lang python
 
 # Specify output file and format
-nightvision swagger extract . --lang java -o api-spec.json --file-format json
+nightvision openapi extract . --lang java -o api-spec.json --file-format json
 
 # Extract and upload directly to a NightVision target
-nightvision swagger extract . -t my-api -p my-project --lang python
+nightvision openapi extract . -t my-api -p my-project --lang python
 
 # Extract without uploading
-nightvision swagger extract . -o openapi-spec.yml --lang java --no-upload
+nightvision openapi extract . -o openapi-spec.yml --lang java --no-upload
 
 # Scan multiple source directories
-nightvision swagger extract ./service-a ./service-b --lang python
+nightvision openapi extract ./service-a ./service-b --lang python
 
 # Extend an existing spec (add discovered endpoints to it)
-nightvision swagger extract . --lang python --extend existing-spec.yml
+nightvision openapi extract . --lang python --extend existing-spec.yml
 
 # Exclude directories from analysis
-nightvision swagger extract . --lang python --exclude vendor,generated
+nightvision openapi extract . --lang python --exclude vendor,generated
 
 # Include code snippets in the spec (useful for debugging)
-nightvision swagger extract . --lang python --dump-code
+nightvision openapi extract . --lang python --dump-code
 ```
 
 ### Extraction fallback for CI
@@ -67,7 +69,7 @@ nightvision swagger extract . --lang python --dump-code
 Extraction can fail if language detection fails or the framework isn't supported. Always guard against this in pipelines:
 
 ```bash
-nightvision swagger extract . -t $TARGET --lang java || true
+nightvision openapi extract . -t $TARGET --lang java || true
 if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; fi
 ```
 
@@ -79,7 +81,7 @@ When static analysis can't resolve a variable (e.g., an API prefix read from an 
 1. Run extraction — if unresolved variables exist, `nv.config` is created alongside the spec (in the first source directory passed to the command)
 2. Open `nv.config` — find the `replacements` object with `null` values
 3. Replace `null` with the actual values (check the app's config files, environment vars, etc.)
-4. Re-run extraction — the tool reads `nv.config` and substitutes the values. You can also use `-c` / `--config` to explicitly specify the config file path: `nightvision swagger extract . --lang python -c path/to/nv.config`
+4. Re-run extraction — the tool reads `nv.config` and substitutes the values. You can also use `-c` / `--config` to explicitly specify the config file path: `nightvision openapi extract . --lang python -c path/to/nv.config`
 
 ```json
 // nv.config example
@@ -94,23 +96,23 @@ The agent should help the user find the actual value by searching their config f
 
 ## Comparing API specs
 
-Use `swagger diff` to measure coverage or detect breaking changes:
+Use `openapi diff` to measure coverage or detect breaking changes:
 
 ```bash
 # Summary diff (paths and schemas counts)
-nightvision swagger diff original-spec.yml discovered-spec.yml
+nightvision openapi diff original-spec.yml discovered-spec.yml
 
 # Show only path-level changes (endpoints added/removed/modified)
-nightvision swagger diff original-spec.yml discovered-spec.yml --paths
+nightvision openapi diff original-spec.yml discovered-spec.yml --paths
 
 # Show only schema changes
-nightvision swagger diff original-spec.yml discovered-spec.yml --schemas
+nightvision openapi diff original-spec.yml discovered-spec.yml --schemas
 
 # Show the full diff (paths and schemas together, with details)
-nightvision swagger diff original-spec.yml discovered-spec.yml --full-diff
+nightvision openapi diff original-spec.yml discovered-spec.yml --full-diff
 
 # Save diff output to file
-nightvision swagger diff original-spec.yml discovered-spec.yml -o diff-report.txt
+nightvision openapi diff original-spec.yml discovered-spec.yml -o diff-report.txt
 ```
 
 Common use cases:
@@ -124,13 +126,13 @@ Search the codebase for existing OpenAPI/Swagger files. The `detect` command tak
 
 ```bash
 # Detect project roots in the current directory
-nightvision swagger detect
+nightvision openapi detect
 
 # Detect in a specific directory
-nightvision swagger detect -p ./path/to/code
+nightvision openapi detect -p ./path/to/code
 
 # Save detection results as JSON
-nightvision swagger detect -o detection-results.json
+nightvision openapi detect -o detection-results.json
 ```
 
 ## Code Traceback
@@ -151,6 +153,6 @@ This is why using NightVision-generated specs (vs. hand-written ones) significan
 | Unresolved variables in paths | Config values read from env vars without defaults | Fill in `nv.config` replacements and re-run |
 | Incomplete routes | Custom routing, non-standard framework usage | NightVision relies on standard framework patterns; custom routing may not be detected |
 | Extraction fails entirely | Syntax errors in source, missing files | Use `--diagnostics` to get language-level error details |
-| Spec missing sub-routes | Code in subdirectories not scanned | Pass multiple paths: `nightvision swagger extract ./src ./lib` |
+| Spec missing sub-routes | Code in subdirectories not scanned | Pass multiple paths: `nightvision openapi extract ./src ./lib` |
 
 For unsupported frameworks or components, contact support@nightviz.ai.
