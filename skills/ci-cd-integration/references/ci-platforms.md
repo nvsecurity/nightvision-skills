@@ -77,12 +77,12 @@ jobs:
           sudo mv nightvision /usr/local/bin/
 
       - name: Extract spec from PR branch
-        run: nightvision openapi extract . -o new-spec.yml --lang java
+        run: nightvision openapi extract . -o new-spec.yml --lang java --no-target
 
       - name: Extract spec from base branch
         run: |
           git checkout ${{ github.event.pull_request.base.sha }}
-          nightvision openapi extract . -o old-spec.yml --lang java
+          nightvision openapi extract . -o old-spec.yml --lang java --no-target
           git checkout ${{ github.event.pull_request.head.sha }}
 
       - name: Diff API specs

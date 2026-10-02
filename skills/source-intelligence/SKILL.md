@@ -8,7 +8,7 @@ allowed-tools: Bash
 
 Use this skill when helping users generate OpenAPI specifications from their source code using `nightvision openapi extract`. Source Intelligence performs static analysis — no running application or compilation needed — and annotates the spec with source file paths and line numbers (Code Traceback) so that vulnerabilities found during DAST scans trace back to exact code locations.
 
-The `nightvision openapi` command group needs CLI 0.18.0 or later. On an earlier release (`nightvision version`), use `nightvision swagger` in its place; later releases accept both names.
+The `nightvision openapi` command group needs CLI 0.18.0 or later. On an earlier release (`nightvision version`), use `nightvision swagger` in its place; later releases accept both names. `--no-target` needs CLI 0.19.0 or later; on an earlier release, use `--no-upload` in its place.
 
 ## Agent workflow
 
@@ -16,7 +16,7 @@ When a user asks to extract or document their API:
 
 1. **Check prerequisites** — verify the NightVision CLI is available (`nightvision --help`)
 2. **Examine the repo** — identify the backend language and web framework to determine the `--lang` flag and whether the framework is supported (see [references/framework-support.md](references/framework-support.md))
-3. **Run extraction** — execute `nightvision openapi extract` with the appropriate flags. On success, the CLI prints `"Swagger file extracted successfully."` and writes the spec to the output path (default: `openapi-spec.yml`)
+3. **Run extraction** — execute `nightvision openapi extract` with the appropriate flags, using `--no-target` if the user has no target yet (see [Choosing where the spec goes](#choosing-where-the-spec-goes)). On success, the CLI prints `"OpenAPI file extracted successfully."` and writes the spec to the output path (default: `openapi-spec.yml`)
 4. **Review the output** — read the generated spec to check completeness. Handle unresolved variables if `nv.config` was created alongside the spec
 5. **Compare coverage** — if the user has an existing spec, run `nightvision openapi diff` to show what was discovered vs. what was documented
 6. **Upload to target** — attach the spec to a NightVision target for scanning
@@ -39,30 +39,42 @@ See [references/framework-support.md](references/framework-support.md) for detai
 ## Running extraction
 
 ```bash
-# Basic extraction (output defaults to openapi-spec.yml)
-nightvision openapi extract . --lang python
+# Try extraction before creating a target (output defaults to openapi-spec.yml)
+nightvision openapi extract . --lang python --no-target
 
 # Specify output file and format
-nightvision openapi extract . --lang java -o api-spec.json --file-format json
+nightvision openapi extract . --lang java -o api-spec.json --file-format json --no-target
 
 # Extract and upload directly to a NightVision target
 nightvision openapi extract . -t my-api -p my-project --lang python
 
-# Extract without uploading
+# Upload nothing, when code-derived files must not leave the machine
 nightvision openapi extract . -o openapi-spec.yml --lang java --no-upload
 
 # Scan multiple source directories
-nightvision openapi extract ./service-a ./service-b --lang python
+nightvision openapi extract ./service-a ./service-b --lang python --no-target
 
 # Extend an existing spec (add discovered endpoints to it)
-nightvision openapi extract . --lang python --extend existing-spec.yml
+nightvision openapi extract . --lang python --extend existing-spec.yml --no-target
 
 # Exclude directories from analysis
-nightvision openapi extract . --lang python --exclude vendor,generated
+nightvision openapi extract . --lang python --exclude vendor,generated --no-target
 
 # Include code snippets in the spec (useful for debugging)
-nightvision openapi extract . --lang python --dump-code
+nightvision openapi extract . --lang python --dump-code --no-target
 ```
+
+### Choosing where the spec goes
+
+Every run needs one of these, or it fails with `no target given`:
+
+| Flags | Use when |
+|-------|----------|
+| `-t` / `-T` (target name / UUID) | The user has an API target to scan; the spec is uploaded to NightVision and to the target |
+| `--no-target` | The user has no target yet, is trying Source Intelligence, or wants to review the spec first |
+| `--no-upload` | The user says code-derived files must not leave their machine |
+
+Default to `--no-target` when there is no target; do not reach for `--no-upload` just because there is no target. With `--no-target` the spec is still uploaded to NightVision, just not to a target; `--no-upload` uploads nothing. `--no-target` cannot be combined with `-t` or `-T`. Without a target, the spec carries a default title and server instead of the target's name and URL.
 
 ### Extraction fallback for CI
 

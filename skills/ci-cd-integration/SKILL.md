@@ -110,8 +110,8 @@ For API targets, extract OpenAPI specs via static analysis. Supports Go, Python,
 # Extract and upload to a target
 nightvision openapi extract . -t my-api -p my-project --lang python
 
-# Extract locally without uploading
-nightvision openapi extract . -o openapi-spec.yml --lang java --no-upload
+# Extract without a target (e.g. for a spec diff)
+nightvision openapi extract . -o openapi-spec.yml --lang java --no-target
 
 # Compare specs for breaking changes (useful in PR checks)
 nightvision openapi diff old-spec.yml new-spec.yml
