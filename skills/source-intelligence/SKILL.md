@@ -17,7 +17,7 @@ When a user asks to extract or document their API:
 1. **Check prerequisites** — verify the NightVision CLI is available (`nightvision --help`)
 2. **Examine the repo** — identify the backend language and web framework to determine the `--lang` flag and whether the framework is supported (see [references/framework-support.md](references/framework-support.md))
 3. **Run extraction** — execute `nightvision openapi extract` with the appropriate flags, using `--no-target` if the user has no target yet (see [Choosing where the spec goes](#choosing-where-the-spec-goes)). On success, the CLI prints `"OpenAPI file extracted successfully."` and writes the spec to the output path (default: `openapi-spec.yml`)
-4. **Review the output** — read the generated spec to check completeness. Handle unresolved variables if `nv.config` was created alongside the spec
+4. **Review the output** — read the generated spec to check completeness. Handle unresolved variables if the run created `nv.config`
 5. **Compare coverage** — if the user has an existing spec, run `nightvision openapi diff` to show what was discovered vs. what was documented
 6. **Upload to target** — attach the spec to a NightVision target for scanning
 
@@ -90,10 +90,10 @@ if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; 
 When static analysis can't resolve a variable (e.g., an API prefix read from an environment variable), it appears as a literal placeholder in the spec. NightVision generates an `nv.config` file to fix this.
 
 **Steps:**
-1. Run extraction — if unresolved variables exist, `nv.config` is created alongside the spec (in the first source directory passed to the command)
+1. Run extraction — if unresolved variables exist, `nv.config` is created in the first detected project root, which need not be the spec's directory
 2. Open `nv.config` — find the `replacements` object with `null` values
 3. Replace `null` with the actual values (check the app's config files, environment vars, etc.)
-4. Re-run extraction — the tool reads `nv.config` and substitutes the values. You can also use `-c` / `--config` to explicitly specify the config file path: `nightvision openapi extract . --lang python -c path/to/nv.config`
+4. Re-run extraction — the tool reads `nv.config` and substitutes the values. You can also use `-c` / `--config` to explicitly specify the config file path: `nightvision openapi extract . --lang python -c path/to/nv.config --no-target`
 
 ```json
 // nv.config example
@@ -132,9 +132,9 @@ Common use cases:
 - **PR checks** — diff specs from the base branch vs. PR branch to detect breaking API changes
 - **Audit** — verify that all endpoints are documented
 
-## Detecting existing specs
+## Detecting project roots
 
-Search the codebase for existing OpenAPI/Swagger files. The `detect` command takes no positional arguments — use `-p` to specify the root folder:
+`openapi detect` lists the project roots and languages that extraction would analyze; it does not find existing OpenAPI/Swagger files, so search the filesystem for those. The `detect` command takes no positional arguments — use `-p` to specify the root folder:
 
 ```bash
 # Detect project roots in the current directory
@@ -164,7 +164,7 @@ This is why using NightVision-generated specs (vs. hand-written ones) significan
 | No endpoints found | Wrong `--lang` flag, or unsupported framework | Verify the framework is supported, check `--lang` value |
 | Unresolved variables in paths | Config values read from env vars without defaults | Fill in `nv.config` replacements and re-run |
 | Incomplete routes | Custom routing, non-standard framework usage | NightVision relies on standard framework patterns; custom routing may not be detected |
-| Extraction fails entirely | Syntax errors in source, missing files | Use `--diagnostics` to get language-level error details |
-| Spec missing sub-routes | Code in subdirectories not scanned | Pass multiple paths: `nightvision openapi extract ./src ./lib` |
+| Extraction fails entirely | Syntax errors in source, missing files | Read the CLI log, and the diagnostics file beside the requested output if the run wrote one (the output's extension is replaced, so `openapi-spec.yml` gets `openapi-spec.diagnostics.json`); `--diagnostics` only embeds a summary in a generated spec |
+| Spec missing sub-routes | Code in subdirectories not scanned | Pass multiple paths: `nightvision openapi extract ./src ./lib --no-target` |
 
 For unsupported frameworks or components, contact support@nightviz.ai.
