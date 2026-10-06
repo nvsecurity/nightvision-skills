@@ -72,7 +72,7 @@ Tool-specific shortcuts:
 | **`scan-configuration`** | Set up DAST scans — create targets, configure authentication (Playwright, headers, cookies), manage projects, define scope exclusions, and prepare private network scans |
 | **`scan-report`** | Generate a shareable PDF security report: an executive summary for AppSec and leadership plus a findings appendix for developers, for one scan, a scan compared with the previous one, or a whole project |
 | **`scan-triage`** | Interpret scan results — read SARIF/CSV findings, understand vulnerabilities, locate the vulnerable code, validate with curl, prioritize by severity, suggest fixes, and mark false positives |
-| **`api-discovery`** | Extract OpenAPI specs from source code via static analysis, troubleshoot extraction issues, compare specs across versions, and leverage Code Traceback |
+| **`source-intelligence`** | Extract OpenAPI specs from source code via static analysis, troubleshoot extraction issues, compare specs across versions, and leverage Code Traceback |
 | **`ci-cd-integration`** | Wire NightVision into your pipeline — GitHub Actions, GitLab CI, Azure DevOps, Jenkins, BitBucket, and JFrog with SARIF/CSV export and breaking-change detection |
 
 ### Example Usage
@@ -100,9 +100,11 @@ In Claude Code, invoke skills directly with slash commands:
 /scan-configuration
 /scan-report
 /scan-triage
-/api-discovery
+/source-intelligence
 /ci-cd-integration
 ```
+
+`/api-discovery`, the former name of `/source-intelligence`, still works.
 
 ## Enterprise agent-instructions block
 
@@ -115,7 +117,7 @@ This block is written for **unattended enforcement**: a population of developers
 
 Whenever you create or materially change a web app, API, backend service, route handler, or deployable application, you MUST run a NightVision security scan as part of finishing that work. This is not optional and does not require the developer to ask for it.
 
-Use the NightVision MCP. Prefer `run-app-security-scan`: it handles preflight, API Discovery, target create/update, DAST start, scan-ID return, and manifest writing in one call. DAST is the expected outcome; API Discovery alone is not enough.
+Use the NightVision MCP. Prefer `run-app-security-scan`: it handles preflight, Source Intelligence, target create/update, DAST start, scan-ID return, and manifest writing in one call. DAST is the expected outcome; Source Intelligence alone is not enough.
 
 To make the scan actually run, do the work the developer will not:
 1. Start the app you just built or changed (use its own run command) so it is reachable locally, then pass that URL as `target_url`. If you cannot start it, say so as a concrete blocker.
@@ -136,9 +138,11 @@ nightvision-skills/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── skills/
+│   ├── api-discovery/
+│   │   └── SKILL.md
 │   ├── app-security-scan/
 │   │   └── SKILL.md
-│   ├── api-discovery/
+│   ├── source-intelligence/
 │   │   ├── SKILL.md
 │   │   └── references/
 │   ├── ci-cd-integration/

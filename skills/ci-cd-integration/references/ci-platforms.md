@@ -35,7 +35,7 @@ jobs:
 
       - name: Extract API documentation from code
         run: |
-          nightvision swagger extract . -t $NIGHTVISION_TARGET --lang java || true
+          nightvision openapi extract . -t $NIGHTVISION_TARGET --lang java || true
           if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; fi
 
       - name: Start the app
@@ -77,16 +77,16 @@ jobs:
           sudo mv nightvision /usr/local/bin/
 
       - name: Extract spec from PR branch
-        run: nightvision swagger extract . -o new-spec.yml --lang java
+        run: nightvision openapi extract . -o new-spec.yml --lang java --no-target
 
       - name: Extract spec from base branch
         run: |
           git checkout ${{ github.event.pull_request.base.sha }}
-          nightvision swagger extract . -o old-spec.yml --lang java
+          nightvision openapi extract . -o old-spec.yml --lang java --no-target
           git checkout ${{ github.event.pull_request.head.sha }}
 
       - name: Diff API specs
-        run: nightvision swagger diff old-spec.yml new-spec.yml
+        run: nightvision openapi diff old-spec.yml new-spec.yml
 ```
 
 ## GitLab CI
@@ -129,10 +129,10 @@ dast_scan:
   script:
     # Extract the API spec; fall back to a committed backup but log loudly.
     - |
-      if nightvision swagger extract ./ --lang spring -t "${NIGHTVISION_APP}"; then
+      if nightvision openapi extract ./ --lang spring -t "${NIGHTVISION_APP}"; then
         echo "Spec extracted from source."
       else
-        echo "WARNING: swagger extract failed; using backup-openapi-spec.yml." >&2
+        echo "WARNING: openapi extract failed; using backup-openapi-spec.yml." >&2
         cp backup-openapi-spec.yml openapi-spec.yml
       fi
       # Guard on the artifact as well: a zero exit that wrote no spec (e.g. no
@@ -180,7 +180,7 @@ stages:
     - script: wget -c https://downloads.nightvision.net/binaries/latest/nightvision_latest_linux_amd64.tar.gz -O - | tar -xz; sudo mv nightvision /usr/local/bin/
       displayName: 'Install NightVision'
 
-    - script: nightvision swagger extract ./ -t $NIGHTVISION_TARGET --lang java
+    - script: nightvision openapi extract ./ -t $NIGHTVISION_TARGET --lang java
       displayName: 'Extract API Documentation from Code'
       env:
         NIGHTVISION_TOKEN: $(NIGHTVISION_TOKEN)
@@ -264,7 +264,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    ./nightvision swagger extract . --target "${env.NIGHTVISION_TARGET}" --lang "${env.TARGET_LANGUAGE}" || true
+                    ./nightvision openapi extract . --target "${env.NIGHTVISION_TARGET}" --lang "${env.TARGET_LANGUAGE}" || true
                     if [ ! -e openapi-spec.yml ]; then
                         cp backup-openapi-spec.yml openapi-spec.yml
                     fi
@@ -326,7 +326,7 @@ pipelines:
         script:
           - apk add --no-cache docker-compose curl tar
           - curl -L https://downloads.nightvision.net/binaries/latest/nightvision_latest_linux_amd64.tar.gz -q | tar -xz && mv nightvision /usr/local/bin/
-          - nightvision swagger extract . -t $NIGHTVISION_TARGET --lang java || true
+          - nightvision openapi extract . -t $NIGHTVISION_TARGET --lang java || true
           - if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; fi
           - docker-compose up -d && sleep 10
           - nightvision scan $NIGHTVISION_TARGET --auth $NIGHTVISION_AUTH > scan-results.txt
