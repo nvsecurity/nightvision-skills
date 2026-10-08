@@ -104,23 +104,29 @@ Most `list` and `get` commands default to text output. Use `--format json` (or `
 
 ## Source Intelligence (spec extraction from source code)
 
-For API targets, extract OpenAPI specs via static analysis. Supports Go, Python, Java, Ruby, C#, JavaScript.
+For API targets, extract OpenAPI specs via static analysis. Supports C#, Go, Java, JavaScript/TypeScript, PHP, Python and Ruby; project roots and languages are detected automatically, so `--lang` is only needed to restrict a run.
 
 ```bash
 # Extract and upload to a target
-nightvision openapi extract . -t my-api -p my-project --lang python
+nightvision openapi extract . -t my-api -p my-project
 
 # Extract without a target (e.g. for a spec diff)
-nightvision openapi extract . -o openapi-spec.yml --lang java --no-target
+nightvision openapi extract . -o openapi-spec.yml --no-target
 
 # Compare specs for breaking changes (useful in PR checks)
 nightvision openapi diff old-spec.yml new-spec.yml
 ```
 
-**Important CI pattern — extraction fallback:** Extraction can fail if language detection fails. Always use:
+**Important CI pattern — extraction fallback:** Extraction exits non-zero when it finds no routes, for example on an unsupported framework, and also when the spec was written but the upload failed. Fall back to a backup spec only when no spec was written, keep `openapi-spec.diagnostics.json` as a build artifact, and print why the fallback was taken.
 ```bash
-nightvision openapi extract . -t $TARGET --lang java || true
-if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; fi
+if ! nightvision openapi extract . -t $TARGET; then
+  if [ -e openapi-spec.yml ]; then
+    echo "Spec extracted but the upload failed; keeping openapi-spec.yml"
+  else
+    echo "Source Intelligence produced no spec; see openapi-spec.diagnostics.json"
+    cp backup-openapi-spec.yml openapi-spec.yml
+  fi
+fi
 ```
 
 ### Code Traceback
