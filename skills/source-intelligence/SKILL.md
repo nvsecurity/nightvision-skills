@@ -15,7 +15,7 @@ The `nightvision openapi` command group needs CLI 0.18.0 or later. On an earlier
 When a user asks to extract or document their API:
 
 1. **Check prerequisites** — verify the NightVision CLI is available (`nightvision --help`)
-2. **Examine the repo** — identify the backend language and web framework to determine the `--lang` flag and whether the framework is supported (see [references/framework-support.md](references/framework-support.md))
+2. **Examine the repo** — identify the backend languages and web frameworks and check them against the support matrix (see [references/framework-support.md](references/framework-support.md)). The CLI detects project roots and languages on its own; pass `--lang` only to restrict a run to one language
 3. **Run extraction** — execute `nightvision openapi extract` with the appropriate flags, using `--no-target` if the user has no target yet (see [Choosing where the spec goes](#choosing-where-the-spec-goes)). On success, the CLI prints `"OpenAPI file extracted successfully."` and writes the spec to the output path (default: `openapi-spec.yml`)
 4. **Review the output** — read the generated spec to check completeness. Handle unresolved variables if the run created `nv.config`
 5. **Compare coverage** — if the user has an existing spec, run `nightvision openapi diff` to show what was discovered vs. what was documented
@@ -23,27 +23,34 @@ When a user asks to extract or document their API:
 
 **Related skills:** Use `scan-configuration` for target/auth setup, `ci-cd-integration` for pipeline integration, `scan-triage` for interpreting scan results.
 
-## Language flags
+## Supported languages and frameworks
 
-| Language | Flag | Frameworks |
-|----------|------|------------|
-| Python | `--lang python` | Django, DRF, Flask, Flask-RESTful, FastAPI |
-| Java | `--lang java` | Spring Boot, JAX-RS/Jersey, Micronaut, Java EE/Jakarta EE |
-| JavaScript | `--lang js` | Express, NestJS, Fastify |
-| C# | `--lang dotnet` | ASP.NET Core (controllers, minimal APIs) |
-| Go | `--lang go` | Gin, httprouter, net/http (experimental) |
-| Ruby | `--lang ruby` | Rails, Grape |
+`--lang` is optional: the CLI detects project roots and languages automatically. Use it only to restrict a run to one language.
 
-See [references/framework-support.md](references/framework-support.md) for detailed component coverage per framework.
+| Language | `--lang` value | Frameworks |
+|----------|----------------|------------|
+| Python | `python` | Django, Django REST Framework, Flask, Flask-RESTful, FastAPI, Starlette, Connexion |
+| Java | `java` | Spring Boot/MVC/Data REST, JAX-RS/Jersey, Micronaut |
+| JavaScript/TypeScript | `js` | Express, Fastify, NestJS |
+| C# | `csharp` | ASP.NET Core MVC, minimal APIs, legacy ASP.NET MVC, Web API 2 |
+| Go | `go` | net/http, Gin, Echo, Fiber v2, chi, gorilla/mux, httprouter |
+| PHP | `php` | Laravel |
+| Ruby | `ruby` | Rails, Grape |
+
+The CLI also accepts the aliases `dotnet` (C#) and `typescript` (JavaScript/TypeScript); the MCP `run-source-intelligence` tool accepts the same values. Plain Java servlets, Kotlin sources, and `.jsx`/`.tsx`/`.mjs` files are not read. See [references/framework-support.md](references/framework-support.md) for component coverage per framework and the [Framework Support Index](https://docs.nightviz.ai/source-intelligence/frameworks/) for the published matrix.
 
 ## Running extraction
 
 ```bash
-# Try extraction before creating a target (output defaults to openapi-spec.yml)
-nightvision openapi extract . --lang python --no-target
+# Try extraction before creating a target (output defaults to openapi-spec.yml);
+# languages and project roots are detected automatically
+nightvision openapi extract . --no-target
+
+# Restrict a repository with several languages to one of them
+nightvision openapi extract . --lang js --no-target
 
 # Specify output file and format
-nightvision openapi extract . --lang java -o api-spec.json --file-format json --no-target
+nightvision openapi extract . -o api-spec.json --file-format json --no-target
 
 # Extract and upload directly to a NightVision target
 nightvision openapi extract . -t my-api -p my-project --lang python
@@ -78,11 +85,17 @@ Default to `--no-target` when there is no target; do not reach for `--no-upload`
 
 ### Extraction fallback for CI
 
-Extraction can fail if language detection fails or the framework isn't supported. Always guard against this in pipelines:
+Extraction exits non-zero when it finds no routes, for example on an unsupported framework, and also when the spec was written but the upload failed. Guard against both in pipelines without hiding the result: fall back to a backup spec only when no spec was written, keep the diagnostics file as a build artifact, and print why the fallback was taken.
 
 ```bash
-nightvision openapi extract . -t $TARGET --lang java || true
-if [ ! -e openapi-spec.yml ]; then cp backup-openapi-spec.yml openapi-spec.yml; fi
+if ! nightvision openapi extract . -t $TARGET; then
+  if [ -e openapi-spec.yml ]; then
+    echo "Spec extracted but the upload failed; keeping openapi-spec.yml"
+  else
+    echo "Source Intelligence produced no spec; see openapi-spec.diagnostics.json"
+    cp backup-openapi-spec.yml openapi-spec.yml
+  fi
+fi
 ```
 
 ## Handling unresolved variables
@@ -157,11 +170,28 @@ The generated spec includes `x-source` annotations on each endpoint with the fil
 
 This is why using NightVision-generated specs (vs. hand-written ones) significantly improves the triage experience.
 
+## Diagnosing an empty or partial result
+
+Every run that returns analysis results writes a diagnostics file beside the requested output, with the output's extension replaced (`openapi-spec.yml` gets `openapi-spec.diagnostics.json`). It is written even when no route was found. Summarize it with `openapi diagnose`, which runs offline and needs no login:
+
+```bash
+nightvision openapi diagnose openapi-spec.yml
+```
+
+Read it in this order:
+
+1. `Result` and `Roots`: which project roots and languages were detected, and how many files, entry points and paths each root contributed. `no file interpreted: <language>` means the language was detected but no source of it was read (for example a Kotlin project detected as Java).
+2. `Unresolved imports`, group `framework`: imports of a web framework the analyzer does not model. This group is filled for Python, PHP and C#; for the other languages look through `third-party` for a framework name (for example `koa`, `github.com/kataras/iris`, `sinatra`).
+3. `Containment`: a recovered framework, handler or language-phase failure means part of the result is missing.
+4. `Losses`: discoveries the analyzer knowingly dropped.
+
+For C# projects the diagnostics file also lists `unmodeledFrameworks`, the web packages a project references that the analyzer does not model.
+
 ## Troubleshooting
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| No endpoints found | Wrong `--lang` flag, or unsupported framework | Verify the framework is supported, check `--lang` value |
+| No endpoints found | Unsupported framework, a project root that was not detected, or `--lang` restricting the run to the wrong language | Run `nightvision openapi diagnose <output>` and check the roots table and the unresolved framework imports; omit `--lang` to let the CLI detect languages; check the support matrix |
 | Unresolved variables in paths | Config values read from env vars without defaults | Fill in `nv.config` replacements and re-run |
 | Incomplete routes | Custom routing, non-standard framework usage | NightVision relies on standard framework patterns; custom routing may not be detected |
 | Extraction fails entirely | Syntax errors in source, missing files | Read the CLI log, and the diagnostics file beside the requested output if the run wrote one (the output's extension is replaced, so `openapi-spec.yml` gets `openapi-spec.diagnostics.json`); `--diagnostics` only embeds a summary in a generated spec |

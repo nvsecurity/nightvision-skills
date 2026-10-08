@@ -32,6 +32,17 @@ Detailed component coverage per language and framework for NightVision Source In
 - `fastapi.Header`, `fastapi.Cookie`
 - `fastapi.status`
 
+### Starlette
+- `starlette.applications.Starlette`, `starlette.routing.Router`
+- Route tables: `Route`, `Mount`, `Host`, including nested entries and mounted ASGI apps
+- `route`, `add_route`, `mount`, `host`
+- Function handlers and `HTTPEndpoint` classes; WebSocket routes are recognized but not emitted
+
+### Connexion
+- Connexion 2.x and 3.x: `App`, `FlaskApp`, `AsyncApp`
+- OpenAPI 3 and Swagger 2 documents passed to `add_api`, with document and call-site base paths
+- Handler resolution via `operationId`, `x-openapi-router-controller`, `x-swagger-router-controller`, `RestyResolver`
+
 ## Java (`--lang java`)
 
 ### Spring Boot
@@ -54,11 +65,12 @@ Detailed component coverage per language and framework for NightVision Source In
 - `@Consumes`, `@Produces`
 - `@Secured`, `SecurityRule`
 
-### Java EE / Jakarta EE
-- `HttpServletRequest`, `HttpServletResponse`
+### Servlet and annotation components (library support, not a routing framework)
+- `HttpServletRequest`, `HttpServletResponse` (`javax.servlet.http` and `jakarta.servlet.http`)
 - `@DenyAll`, `@PermitAll`, `@RolesAllowed`
+- Plain `@WebServlet` classes and `web.xml` servlet mappings are not route sources; only JAX-RS servlets registered in `web.xml` are followed
 
-## JavaScript (`--lang js`)
+## JavaScript / TypeScript (`--lang js`)
 
 ### Express
 - `express.Router()`, `app.use()`, `app.route()`
@@ -72,12 +84,12 @@ Detailed component coverage per language and framework for NightVision Source In
 - `setGlobalPrefix`, `listen`
 
 ### Fastify
-- `@fastify.autoload`
+- `@fastify/autoload`
 - HTTP verbs: `get`, `head`, `post`, `put`, `delete`, `options`, `patch`
 - `fastify.route`, `fastify.register`
 - `fastify.listen`, `fastify.ready`
 
-## C# (`--lang dotnet`)
+## C# (`--lang csharp`, alias `dotnet`)
 
 ### ASP.NET Core
 - **Controllers**: `ApiController`, `Controller`, `ControllerBase`
@@ -87,7 +99,12 @@ Detailed component coverage per language and framework for NightVision Source In
 - **Auth**: `AddJwtBearer`, `AddCookie`, `AddOAuth`, `AddOpenIdConnect`, `Authorize`, `AllowAnonymous`
 - **Config**: `WebApplication`, `WebApplicationBuilder`, `UseEndpoints()`, `UsePathBase()`
 
-## Go (`--lang go`) — Experimental
+### Legacy ASP.NET (.NET Framework)
+- ASP.NET MVC 5: `System.Web.Mvc` controllers, attribute routes, `RouteConfig.RegisterRoutes`
+- Web API 2: `System.Web.Http.ApiController`, attribute routes, `WebApiConfig.Register`; controllers without a route use `{controller}/{action}`
+- `Web.config` `<authentication mode="Forms">` and `mode="Windows"` become security schemes
+
+## Go (`--lang go`)
 
 ### Gin
 - `gin.New()`, `gin.Default()`
@@ -95,14 +112,48 @@ Detailed component coverage per language and framework for NightVision Source In
 - Binding: `BindJSON`, `ShouldBind`, `ShouldBindJSON`
 - Parameters: `Query`, `Param`, `PostForm`, `Cookie`
 
+### Echo
+- `echo.New()`
+- `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HEAD`, `CONNECT`, `TRACE`, `Any`, `Match`, `Add`, `Group`
+- `Context.Param`, `Context.QueryParam`, `Context.FormValue`, `Context.Bind`
+
+### Fiber v2
+- `fiber.New()`
+- `Get`, `Post`, `Put`, `Delete`, `Patch`, `Head`, `Options`, `Connect`, `Trace`, `All`, `Add`, `Group`, `Route`
+- `Ctx.Params`, `Ctx.Query`, `Ctx.FormValue`, `Ctx.BodyParser`, `Ctx.QueryParser`
+- A Fiber v3 import is recognized but analyzed with v2 semantics
+
+### chi
+- `chi.NewRouter()`, `chi.NewMux()`, `chi.URLParam`
+- `Get`, `Post`, `Put`, `Delete`, `Patch`, `Head`, `Options`, `Connect`, `Trace`, `HandleFunc`, `Handle`, `Method`, `MethodFunc`
+- `Route`, `Group`, `Mount`, `With`
+
+### gorilla/mux
+- `mux.NewRouter()`
+- `Router.HandleFunc`, `Router.Handle`, `Router.PathPrefix`, `Router.Path`
+- `Route.Subrouter`, `Route.Methods`, `Route.Queries`, `Route.Handler`, `Route.HandlerFunc`
+
 ### httprouter
 - `httprouter.New()`
 - `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`
 
 ### net/http (standard library)
-- `http.Request`: `FormValue`, `PostFormValue`, `Cookie`
+- `http.HandleFunc`, `http.Handle`, `http.NewServeMux`, `ServeMux.HandleFunc`, `ServeMux.Handle`, including Go 1.22 method and wildcard patterns
+- `http.Request`: `FormValue`, `PostFormValue`, `Cookie`, `PathValue`
 - `http.ResponseWriter`
 - `http.Server`, `ListenAndServe`
+- Third-party routers other than the ones listed above are not modeled
+
+## PHP (`--lang php`)
+
+### Laravel
+- Routing: `Route::get`, `post`, `put`, `patch`, `delete`, `options`, `head`, `any`, `match`, `resource`, `apiResource`, `singleton`, `apiSingleton`, `redirect`, `view`, `fallback`
+- Groups: `Route::prefix`, `middleware`, `name`, `domain`, `controller`, `namespace`, `group`; resource modifiers `only`, `except`, `shallow`; parameter constraints `where*`
+- Route files registered by `RouteServiceProvider` (Laravel 10) or `bootstrap/app.php` `withRouting` (Laravel 11+), including package, module and Porto layouts
+- `Illuminate\Http\Request` input readers (`input`, `query`, `json`, `header`, `cookie`, `file`, `validate`, ...) and `FormRequest` rules for parameter names, types and required status
+- Responses: `response()`, `response()->json`, `download`, `file`, `stream`, `noContent`, `redirect`, `view`, `abort`, `JsonResource`
+- Auth: guards from `config/auth.php` (`session`, `token`, `sanctum`, `passport`) and the `auth` middleware with named guards (`auth:sanctum`, `auth:api`)
+- Laravel only: Symfony, Slim, Lumen, CodeIgniter, Yii, Laminas and WordPress are not modeled
 
 ## Ruby (`--lang ruby`)
 
