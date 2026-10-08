@@ -14,14 +14,15 @@ Requirements: this skill drives the NightVision MCP server's app-security-scan h
 
 Source Intelligence uses deterministic static analysis to generate an OpenAPI spec for supported codebases. Source-linked results are strongest for the empirically verified languages and frameworks below:
 
-- Python: Django, Django REST Framework, Flask, Flask-RESTful, FastAPI
-- JavaScript/TypeScript: Express, NestJS, Fastify
-- Java: Spring Boot, JAX-RS/Jersey, Micronaut, Java EE/Jakarta EE
-- C#: ASP.NET Core controllers and minimal APIs
-- Go: Gin, httprouter, and experimental `net/http` support
+- Python: Django, Django REST Framework, Flask, Flask-RESTful, FastAPI, Starlette, Connexion
+- JavaScript/TypeScript: Express, Fastify, NestJS
+- Java: Spring Boot/MVC/Data REST, JAX-RS/Jersey, Micronaut
+- C#: ASP.NET Core MVC and minimal APIs, legacy ASP.NET MVC and Web API 2
+- Go: `net/http`, Gin, Echo, Fiber v2, chi, gorilla/mux, httprouter
+- PHP: Laravel
 - Ruby: Rails and Grape
 
-Treat frameworks outside this list, including PHP frameworks, as verify-first for source discovery. Still run DAST against reachable web apps and APIs as a WEB target when discovery is unsupported or produces no spec, but report that findings may not include source `file:line` traceback. Source-based discovery is REST/OpenAPI only.
+Treat frameworks outside this list as verify-first for source discovery. Still run DAST against reachable web apps and APIs as a WEB target when discovery is unsupported or produces no spec, but report that findings may not include source `file:line` traceback. Source-based discovery is REST/OpenAPI only.
 
 ## Workflow
 
