@@ -153,4 +153,8 @@ If the finding is a false positive, the user can mark it in the NightVision web 
 
 **Nuclei Templates** — Template-based detection of known CVEs and misconfigurations.
 
-Specific rules can be disabled per scan with `--disable-zap-active-alerts <ids>` or `--disable-nuclei-folders <paths>`, or entire engines with `--no-zap` / `--no-nuclei`.
+Specific rules can be disabled per scan with `--disable-zap-active-alerts <ids>`, `--disable-nuclei-folders <paths>` or `--disable-nuclei-templates <custom template ids>`, or entire engines with `--no-zap` / `--no-nuclei`.
+
+**AI endpoint checks:** Regular scans test the target's AI endpoints (see `scan-configuration`). **LLM Cloud Metadata Exposure** (CRITICAL) means the endpoint could be prompted into fetching the cloud instance metadata service, confirmed by the provider's own data in the response, so treat it as real and prioritize it: restrict or remove the model's URL-fetching tools, validate any URL the model can request against an allowlist, and block metadata addresses (169.254.169.254 and the cloud equivalents) from the app's egress. IMDSv2 alone does not stop this. Ordinary checks are kept off listed AI endpoints, so a SQL injection or code injection reported on an AI route deserves a careful curl check: a model's reply can echo payloads without any real injection.
+
+**Quantum readiness findings:** Shown on the target's Quantum readiness tab, not in the vulnerability list. Prioritize by status (Fix now first). They are migration work items with deadlines, not exploitable vulnerabilities; do not report them alongside exploitable findings as if they were.

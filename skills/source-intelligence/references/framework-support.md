@@ -2,6 +2,39 @@
 
 Detailed component coverage per language and framework for NightVision Source Intelligence.
 
+## What to expect per framework (CLI 0.22.7 and later)
+
+Use this to judge an extracted spec before scanning with it. The component lists further down describe what the analysis models.
+
+**Routes, parameters, bodies and authentication all extracted:** Flask (incl. flask-httpauth and `MethodView` on `app.add_url_rule`), Express 4 and 5 (incl. `express-jwt` and passport middleware), NestJS (guards), Spring Boot MVC (Spring Security, with `x-roles`), Spring Boot Actuator, Laravel (`routes/api.php`, `auth:sanctum` groups), Gin, Echo, Fiber v2 and v3.
+
+**Routes extracted, with known gaps:**
+- Django REST Framework ViewSets with a router: authentication extracted; POST bodies may be missing; path parameter named `{pk}`.
+- FastAPI: a path parameter the handler never reads may be dropped from that operation.
+- Flask-RESTful, Starlette: routes extracted; authentication via `method_decorators` / `@requires` is not recognized, so those routes appear unauthenticated.
+- Connexion: routes and security come from the OpenAPI document you pass to `add_api`.
+- Fastify: shorthand (`fastify.get`), `fastify.route` and `register`ed plugins all extract, with `preHandler` hook auth; JSON-schema bodies in `route({schema})` are not described.
+- Hono: routes and zod-validated bodies extract; `bearerAuth` / `basicAuth` middleware is not recognized.
+- JAX-RS/Jersey, Quarkus, Dropwizard: routes, parameters and bodies extract; protected operations are marked, with a generic scheme flagged `x-unsound: security`.
+- Micronaut: routes and Bearer auth extract; operations are flagged `x-unsound: security` and carry no `x-roles`.
+- Spring Data REST: repository routes and filter-chain security extract; method-level `@PreAuthorize` is not reflected.
+- Spring WebFlux annotated controllers: routes extract; a JWT resource server may be labeled as basic auth.
+- ASP.NET Core controllers and Minimal APIs: routes and `[Authorize]` / `RequireAuthorization()` extract (no `x-roles`); one level of `MapGroup` works. A `.csproj` is required.
+- ASP.NET Web API 2: routes extract without a security scheme; route constraints like `{id:int}` can produce a duplicate path.
+- net/http with Go 1.22+ method patterns (`"GET /users/{id}"`), chi, gorilla/mux: routes and auth extract; request bodies decoded with `json.NewDecoder` are not described (binder idioms in Gin, Echo and Fiber are).
+- Rails (`resources` and explicit routes): routes and `before_action` auth extract, flagged `x-unsound: security`. `config/application.rb` must be present.
+- Laravel `apiResource` with a chained `->middleware()`: auth not recognized; inside a `Route::middleware()->group()` it is.
+
+- Django URLconf views: routes extract, but HTTP-method decorators are ignored (expect extra methods) and `login_required` is not recognized.
+- oRPC: routes and bodies extract; no auth; operations flagged `x-unsound: path`.
+- httprouter: routes extract without path parameters, auth or bodies.
+
+**Check the output closely:** DRF `APIView` (extra `{pk}` paths possible), Flask blueprints registered with `url_prefix` (the prefix may be missing from paths), nested Minimal API `MapGroup` (the outer prefix may be missing), Grape `route_param` routes (may collapse without the `{id}` segment), classic net/http handlers that switch on `r.Method`.
+
+**Not supported (0 routes):** DRF mixin-based `GenericViewSet`, Flask `@bp.get`-style shorthand on blueprints, aiohttp, Sanic, Tornado, Litestar, Quart, Koa, hapi, Restify, AdonisJS, Next.js route handlers, Spring WebFlux functional `RouterFunction`, Javalin, Vert.x, Struts, NancyFX, ServiceStack, FastEndpoints, Carter, fasthttp, Sinatra, Hanami, Symfony, Slim, Lumen.
+
+When a route has no `security` field, it may be public or its auth may not have been recognized. Check the frameworks above before telling a user an endpoint is unauthenticated, and run `nightvision openapi diagnose <spec-file>` on any empty or partial run.
+
 ## Python (`--lang python`)
 
 ### Django

@@ -20,7 +20,7 @@
 
 ---
 
-[NightVision](https://nightviz.ai) is a developer-first DAST and API security platform. It dynamically tests running web applications and APIs, discovers REST endpoints from supported source code, and connects validated findings to source locations when that context is available.
+[NightVision](https://nightviz.ai) is a DAST platform for web applications and APIs. It reads source code to map every API (Source Intelligence), tests the running application the way an attacker would, including AI-backed endpoints and quantum-vulnerable cryptography, and connects validated findings to source locations when that context is available.
 
 These [Agent Skills](https://agentskills.io) give your coding agent the ability to run NightVision scans, triage results, and integrate security testing into your CI/CD pipelines, all from natural language. Agent Skills are an open format supported by Claude Code, OpenAI Codex, Cursor, and other agentic tools, so the same skill folders work across whichever agent you use.
 
@@ -69,10 +69,10 @@ Tool-specific shortcuts:
 | Skill | What it does |
 |:------|:-------------|
 | **`app-security-scan`** | Run the DAST-first app scan harness for local, private, staging, and internal apps. Uses MCP `run-app-security-scan` when available to preflight, discover APIs, create/update targets, start scans, return scan IDs, poll status, summarize findings, export SARIF/CSV, and write a manifest |
-| **`scan-configuration`** | Set up DAST scans — create targets, configure authentication (Playwright, headers, cookies), manage projects, define scope exclusions, and prepare private network scans |
+| **`scan-configuration`** | Set up DAST scans — create targets, configure and verify authentication (Playwright, headers, cookies, `--login-check`), choose scan duration and engines, set up AI endpoint scanning and quantum readiness, define scope exclusions, and prepare private network scans |
 | **`scan-report`** | Generate a shareable PDF security report: an executive summary for AppSec and leadership plus a findings appendix for developers, for one scan, a scan compared with the previous one, or a whole project |
 | **`scan-triage`** | Interpret scan results — read SARIF/CSV findings, understand vulnerabilities, locate the vulnerable code, validate with curl, prioritize by severity, suggest fixes, and mark false positives |
-| **`source-intelligence`** | Extract OpenAPI specs from source code via static analysis, troubleshoot extraction issues, compare specs across versions, and leverage Code Traceback |
+| **`source-intelligence`** | Extract OpenAPI specs from source code, check framework support, report weak cryptography and hardcoded credentials, troubleshoot extraction, compare specs across versions, and leverage Code Traceback |
 | **`ci-cd-integration`** | Wire NightVision into your pipeline — GitHub Actions, GitLab CI, Azure DevOps, Jenkins, BitBucket, and JFrog with SARIF/CSV export and breaking-change detection |
 
 ### Example Usage

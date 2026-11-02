@@ -6,7 +6,7 @@ allowed-tools: Bash
 
 # NightVision CI/CD Integration
 
-Use this skill when helping users add NightVision security scanning to their CI/CD pipelines. NightVision is a white-box-assisted DAST tool that finds exploitable vulnerabilities in web applications and REST APIs. It combines Source Intelligence (static analysis to extract OpenAPI specs from source code) with dynamic scanning (ZAP + Nuclei engines), and traces vulnerabilities back to exact source code locations (Code Traceback).
+Use this skill when helping users add NightVision security scanning to their CI/CD pipelines. NightVision is a white-box-assisted DAST tool that finds exploitable vulnerabilities in web applications and REST APIs. It combines Source Intelligence (reads source code to extract OpenAPI specs) with dynamic scanning (ZAP + Nuclei engines), and traces vulnerabilities back to exact source code locations (Code Traceback).
 
 ## Agent workflow
 
@@ -104,7 +104,7 @@ Most `list` and `get` commands default to text output. Use `--format json` (or `
 
 ## Source Intelligence (spec extraction from source code)
 
-For API targets, extract OpenAPI specs via static analysis. Supports C#, Go, Java, JavaScript/TypeScript, PHP, Python and Ruby; project roots and languages are detected automatically, so `--lang` is only needed to restrict a run.
+For API targets, extract OpenAPI specs from source with Source Intelligence. Supports C#, Go, Java, JavaScript/TypeScript, PHP, Python and Ruby; project roots and languages are detected automatically, so `--lang` is only needed to restrict a run.
 
 ```bash
 # Extract and upload to a target
@@ -139,13 +139,15 @@ When Source Intelligence generates the spec, it annotates endpoints with file pa
 # Basic scan
 nightvision scan my-target -p my-project
 
-# Authenticated scan
+# Authenticated scan: gate on the login first, so a broken login fails the job
+# instead of producing a quiet, mostly-public scan
+nightvision scan my-target -p my-project --auth my-auth --login-check
 nightvision scan my-target -p my-project --auth my-auth
 
 # Unauthenticated (explicit, skip any stored credentials)
 nightvision scan my-target -p my-project --no-auth
 
-# Extended duration (default 30 min, max 480 min / 8 hours)
+# Extended duration (default 30 min, max 480 min / 8 hours); use 120 for web apps
 nightvision scan my-target -p my-project --max-duration-minutes 120
 
 # Engine selection

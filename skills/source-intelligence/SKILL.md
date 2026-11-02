@@ -6,7 +6,7 @@ allowed-tools: Bash
 
 # NightVision Source Intelligence
 
-Use this skill when helping users generate OpenAPI specifications from their source code using `nightvision openapi extract`. Source Intelligence performs static analysis — no running application or compilation needed — and annotates the spec with source file paths and line numbers (Code Traceback) so that vulnerabilities found during DAST scans trace back to exact code locations.
+Use this skill when helping users generate OpenAPI specifications from their source code using `nightvision openapi extract`. Source Intelligence reads the source locally and deterministically (no running application or compilation needed, no source code uploaded, no LLM reads the code) and annotates the spec with source file paths and line numbers (Code Traceback) so that vulnerabilities found during DAST scans trace back to exact code locations.
 
 The `nightvision openapi` command group needs CLI 0.18.0 or later. On an earlier release (`nightvision version`), use `nightvision swagger` in its place; later releases accept both names. `--no-target` needs CLI 0.19.0 or later; on an earlier release, use `--no-upload` in its place.
 
@@ -27,17 +27,19 @@ When a user asks to extract or document their API:
 
 `--lang` is optional: the CLI detects project roots and languages automatically. Use it only to restrict a run to one language.
 
-| Language | `--lang` value | Frameworks |
+| Language | `--lang` value | Frameworks (verified with CLI 0.22.7 and later) |
 |----------|----------------|------------|
-| Python | `python` | Django, Django REST Framework, Flask, Flask-RESTful, FastAPI, Starlette, Connexion |
-| Java | `java` | Spring Boot/MVC/Data REST, JAX-RS/Jersey, Micronaut |
-| JavaScript/TypeScript | `js` | Express, Fastify, NestJS |
-| C# | `csharp` | ASP.NET Core MVC, minimal APIs, legacy ASP.NET MVC, Web API 2 |
-| Go | `go` | net/http, Gin, Echo, Fiber v2, chi, gorilla/mux, httprouter |
+| Python | `python` | Django REST Framework, Flask, Flask-RESTful, FastAPI, Starlette, Connexion; Django URLconf (with gaps) |
+| Java | `java` | Spring Boot MVC, Spring Data REST, Spring Boot Actuator, JAX-RS/Jersey (javax and jakarta), Micronaut, Quarkus, Dropwizard; Spring WebFlux annotated controllers |
+| JavaScript/TypeScript | `js` | Express 4 and 5, NestJS, Fastify, Hono; oRPC (with gaps) |
+| C# | `csharp` | ASP.NET Core controllers, Minimal APIs (incl. `MapGroup`), ASP.NET Web API 2 |
+| Go | `go` | net/http (Go 1.22+ method patterns), Gin, Echo, Fiber v2 and v3, chi, gorilla/mux; httprouter (with gaps) |
 | PHP | `php` | Laravel |
-| Ruby | `ruby` | Rails, Grape |
+| Ruby | `ruby` | Rails; Grape (partial) |
 
-The CLI also accepts the aliases `dotnet` (C#) and `typescript` (JavaScript/TypeScript); the MCP `run-source-intelligence` tool accepts the same values. Plain Java servlets, Kotlin sources, and `.jsx`/`.tsx`/`.mjs` files are not read. See [references/framework-support.md](references/framework-support.md) for component coverage per framework and the [Framework Support Index](https://docs.nightviz.ai/source-intelligence/frameworks/) for the published matrix.
+Not supported today (0 routes): aiohttp, Sanic, Tornado, Litestar, Quart, Koa, hapi, Restify, AdonisJS, Next.js route handlers, Spring WebFlux functional `RouterFunction`, Javalin, Vert.x, Struts, NancyFX, ServiceStack, FastEndpoints, Carter, fasthttp, Sinatra, Hanami, Symfony, Slim, Lumen. For these, scan the running app with the crawler, upload an existing spec, or record traffic instead (see `scan-configuration`).
+
+The CLI also accepts the aliases `dotnet` (C#) and `typescript` (JavaScript/TypeScript); the MCP `run-source-intelligence` tool accepts the same values. Plain Java servlets, Kotlin sources, and `.jsx`/`.tsx` files are not read; `.mjs`, `.cjs`, `.mts` and `.cts` are read alongside `.js` and `.ts`. A project needs its normal skeleton to be detected: `config/application.rb` for Rails, a `.csproj` for C#, a `main.ts` with `NestFactory` for NestJS. See [references/framework-support.md](references/framework-support.md) for what to check in the output per framework and for component coverage, and the [Framework Support Index](https://docs.nightviz.ai/source-intelligence/frameworks/) for the published matrix.
 
 ## Running extraction
 
@@ -97,6 +99,26 @@ if ! nightvision openapi extract . -t $TARGET; then
   fi
 fi
 ```
+
+## Reports beyond the spec
+
+The same `openapi extract` run can write two more reports. Both are written beside the spec and are uploaded with it unless `--no-upload` is given.
+
+```bash
+# Weak and quantum-vulnerable cryptography: algorithms, modes, key sizes and JWT settings in
+# Python and JavaScript code, plus committed keys, certificates and TLS configuration in any language
+nightvision openapi extract . -t my-api -p my-project --weak-crypto
+
+# Hardcoded credentials (redacted report: <output>-credentials.json holds no credential value)
+nightvision openapi extract . --no-target --credentials
+
+# Seal found credentials to your own public key instead (the sealed file is never uploaded)
+nightvision openapi extract . --no-target --credentials-key ./my-public-key.pem
+```
+
+- With a target (`-t`), the `--weak-crypto` report is stored with that target and appears on the target's **Quantum readiness** tab in the web app next to the runtime findings from scans (CLI 0.22.5 or later; JavaScript code analysis needs CLI 0.22.7 or later).
+- Each upload replaces the target's previous source report, and findings it does not contain are resolved. Keep every upload to a target on the same scope: the same code paths, `--root-path` (set it to the repository's top level), `--lang`, `--exclude` and import settings. A narrower run resolves findings it never looked at; a run from another root re-reports everything as new. If quantum readiness is off for the organization, the upload is refused with a message and the extract still succeeds.
+- Routes whose handlers call an LLM SDK (OpenAI, Anthropic, Bedrock, Gemini, LangChain and others, in Python, C#, Go, JavaScript/TypeScript, Ruby and PHP, CLI 0.22.2 or later) are tagged in the spec with `x-nv-dast-sinks: [llm-query]` (and `llm-tool-call` when tools are passed). When that spec is uploaded to a target, those routes fill the target's **LLM Endpoints** list automatically, so scans keep ordinary attack payloads off them. See `scan-configuration` for AI endpoint scanning.
 
 ## Handling unresolved variables
 
