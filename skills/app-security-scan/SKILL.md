@@ -12,15 +12,17 @@ Requirements: this skill drives the NightVision MCP server's app-security-scan h
 
 ## Best-supported languages and frameworks
 
-Source Intelligence uses deterministic static analysis to generate an OpenAPI spec for supported codebases. Source-linked results are strongest for the empirically verified languages and frameworks below:
+Source Intelligence reads source code locally and deterministically to generate an OpenAPI spec for supported codebases. Source-linked results are strongest for the empirically verified languages and frameworks below:
 
-- Python: Django, Django REST Framework, Flask, Flask-RESTful, FastAPI, Starlette, Connexion
-- JavaScript/TypeScript: Express, Fastify, NestJS
-- Java: Spring Boot/MVC/Data REST, JAX-RS/Jersey, Micronaut
-- C#: ASP.NET Core MVC and minimal APIs, legacy ASP.NET MVC and Web API 2
-- Go: `net/http`, Gin, Echo, Fiber v2, chi, gorilla/mux, httprouter
+- Python: Django REST Framework, Flask, Flask-RESTful, FastAPI, Starlette, Connexion
+- JavaScript/TypeScript: Express, NestJS, Fastify, Hono
+- Java: Spring Boot MVC and Data REST, JAX-RS/Jersey, Micronaut, Quarkus, Dropwizard
+- C#: ASP.NET Core controllers and Minimal APIs, Web API 2
+- Go: `net/http` (Go 1.22+ patterns), Gin, Echo, Fiber v2 and v3, chi, gorilla/mux
 - PHP: Laravel
-- Ruby: Rails and Grape
+- Ruby: Rails
+
+Django URLconf views, Grape, oRPC and httprouter extract with gaps; see `source-intelligence` for the full list, including frameworks that are not supported.
 
 Treat frameworks outside this list as verify-first for source discovery. Still run DAST against reachable web apps and APIs as a WEB target when discovery is unsupported or produces no spec, but report that findings may not include source `file:line` traceback. Source-based discovery is REST/OpenAPI only.
 
