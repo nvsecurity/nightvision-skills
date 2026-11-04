@@ -143,7 +143,7 @@ Guide the user through this decision:
 3. **Review the code** — is the vulnerable pattern actually reachable in production?
 4. **Consider the context** — is this a test endpoint, internal-only, or behind additional access controls?
 
-If the finding is a false positive, the user can mark it in the NightVision web UI (app.nightvision.net) under the scan results. Status options: **Open**, **False Positive**, **Resolved**.
+If the finding is a false positive, the user can mark it in the NightVision web UI (app.nightviz.ai) under the scan results. Status options: **Open**, **False Positive**, **Resolved**.
 
 ## NightVision scanning engines
 
