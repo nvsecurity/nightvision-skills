@@ -77,6 +77,7 @@ Tool-specific shortcuts:
 | **`secure-build`** | Secure-by-default rules the agent follows while writing a web app or API: access control on every object, parameterized queries, secrets out of code and frontend bundles, sessions, CORS and headers, rate limits, uploads, SSRF, AI features, dependencies, and Supabase/Firebase rules |
 | **`authz-review`** | Review object-level and function-level access control (BOLA/IDOR, admin actions, mass assignment) route by route with source `file:line`, and write a two-user test the developer runs against their own local or dev app |
 | **`verify-fix`** | Prove a finding is fixed: replay the proof-of-concept request, then rerun only the check that found it against the same target, and report verified or still open with the retest scan ID |
+| **`ship-check`** | The finish line for agent-built apps: review the change, scan the running app, fix what is real in code written this session, verify each fix with a retest, and report what is open, with false-positive candidates left for AppSec to decide |
 
 ### Example Usage
 
@@ -90,6 +91,8 @@ Just ask your agent what you need:
 > Triage the results from my last scan and suggest fixes
 
 > Make a PDF report of my last scan that I can send to our CISO
+
+> Is this safe to ship? Run a security check before I deploy
 
 > I fixed the SQL injection, verify the fix
 
@@ -112,6 +115,7 @@ In Claude Code, invoke skills directly with slash commands:
 /secure-build
 /authz-review
 /verify-fix
+/ship-check
 ```
 
 `/api-discovery`, the former name of `/source-intelligence`, still works.
@@ -169,7 +173,9 @@ nightvision-skills/
 │   │   └── SKILL.md
 │   ├── authz-review/
 │   │   └── SKILL.md
-│   └── verify-fix/
+│   ├── verify-fix/
+│   │   └── SKILL.md
+│   └── ship-check/
 │       └── SKILL.md
 ├── README.md
 └── LICENSE
