@@ -75,6 +75,7 @@ Tool-specific shortcuts:
 | **`source-intelligence`** | Extract OpenAPI specs from source code, check framework support, report weak cryptography and hardcoded credentials, troubleshoot extraction, compare specs across versions, and leverage Code Traceback |
 | **`ci-cd-integration`** | Wire NightVision into your pipeline — GitHub Actions, GitLab CI, Azure DevOps, Jenkins, BitBucket, and JFrog with SARIF/CSV export and breaking-change detection |
 | **`secure-build`** | Secure-by-default rules the agent follows while writing a web app or API: access control on every object, parameterized queries, secrets out of code and frontend bundles, sessions, CORS and headers, rate limits, uploads, SSRF, AI features, dependencies, and Supabase/Firebase rules |
+| **`authz-review`** | Review object-level and function-level access control (BOLA/IDOR, admin actions, mass assignment) route by route with source `file:line`, and write a two-user test the developer runs against their own local or dev app |
 
 ### Example Usage
 
@@ -88,6 +89,8 @@ Just ask your agent what you need:
 > Triage the results from my last scan and suggest fixes
 
 > Make a PDF report of my last scan that I can send to our CISO
+
+> Can one user see another user's orders in this app?
 
 > Add NightVision to my GitHub Actions workflow
 
@@ -104,6 +107,7 @@ In Claude Code, invoke skills directly with slash commands:
 /source-intelligence
 /ci-cd-integration
 /secure-build
+/authz-review
 ```
 
 `/api-discovery`, the former name of `/source-intelligence`, still works.
@@ -157,7 +161,9 @@ nightvision-skills/
 │   ├── scan-triage/
 │   │   ├── SKILL.md
 │   │   └── references/
-│   └── secure-build/
+│   ├── secure-build/
+│   │   └── SKILL.md
+│   └── authz-review/
 │       └── SKILL.md
 ├── README.md
 └── LICENSE
