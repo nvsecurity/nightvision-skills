@@ -74,6 +74,7 @@ Tool-specific shortcuts:
 | **`scan-triage`** | Interpret scan results — read SARIF/CSV findings, understand vulnerabilities, locate the vulnerable code, validate with curl, prioritize by severity, suggest fixes, and mark false positives |
 | **`source-intelligence`** | Extract OpenAPI specs from source code, check framework support, report weak cryptography and hardcoded credentials, troubleshoot extraction, compare specs across versions, and leverage Code Traceback |
 | **`ci-cd-integration`** | Wire NightVision into your pipeline — GitHub Actions, GitLab CI, Azure DevOps, Jenkins, BitBucket, and JFrog with SARIF/CSV export and breaking-change detection |
+| **`secure-build`** | Secure-by-default rules the agent follows while writing a web app or API: access control on every object, parameterized queries, secrets out of code and frontend bundles, sessions, CORS and headers, rate limits, uploads, SSRF, AI features, dependencies, and Supabase/Firebase rules |
 
 ### Example Usage
 
@@ -102,6 +103,7 @@ In Claude Code, invoke skills directly with slash commands:
 /scan-triage
 /source-intelligence
 /ci-cd-integration
+/secure-build
 ```
 
 `/api-discovery`, the former name of `/source-intelligence`, still works.
@@ -152,9 +154,11 @@ nightvision-skills/
 │   │   └── SKILL.md
 │   ├── scan-report/
 │   │   └── SKILL.md
-│   └── scan-triage/
-│       ├── SKILL.md
-│       └── references/
+│   ├── scan-triage/
+│   │   ├── SKILL.md
+│   │   └── references/
+│   └── secure-build/
+│       └── SKILL.md
 ├── README.md
 └── LICENSE
 ```
