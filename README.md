@@ -143,7 +143,38 @@ Auth: every NightVision action runs under the developer's own NightVision accoun
 Completion contract: work on a new or materially changed app is not complete until either `.nightvision/manifest.json` exists with a NightVision DAST scan ID, or you have stated the exact blocker that prevented DAST (app would not start, no project, not authenticated, target unreachable). A terminal `FAILED` scan can still contain valid findings, so check issue counts and export/summarize before treating a run as unusable. Report the scan ID, the top findings, and the artifact paths to the developer. Never claim an app was scanned, secured, or free of vulnerabilities unless NightVision results support it.
 ```
 
-> Trigger reliability note: an agent-instructions rule makes the agent scan reliably in the common case, but it is probabilistic, not guaranteed, on every single turn. For hard enforcement across a fleet, pair this block with a harness-level gate (for example a Stop/PreCompact hook or a CI check) that fails the turn/build when a new or changed app has no `.nightvision/manifest.json` with a scan ID. The block above is what makes the agent do the right thing; the hook is what guarantees it.
+> Trigger reliability note: an agent-instructions rule makes the agent scan reliably in the common case, but it is probabilistic, not guaranteed, on every single turn. In Claude Code, turn on the plugin's enforcement mode (below) so a Stop hook reminds the agent when changed app source has no scan since the change. For hard enforcement across a fleet, add a CI check that fails the build when a new or changed app has no `.nightvision/manifest.json` with a scan ID. The block above is what makes the agent do the right thing; the hook and CI check are what back it up.
+
+## Hooks (Claude Code)
+
+The plugin ships two hooks in `hooks/`. They need only `bash` and `git`, run no NightVision command other than `nightvision version`, and never fail a session.
+
+- **SessionStart** adds a short note to every session: follow `secure-build` while writing app code, and offer `ship-check` before calling an app done. It also warns when the NightVision CLI is missing or older than the supported minimum, so the agent can say so before a scan fails.
+- **Stop** does nothing unless enforcement mode is on. In enforcement mode, when the agent is about to finish a turn in a git repository where application source changed during the session (uncommitted, or committed during the session) and the app holding that source has no NightVision scan recorded since the change, it asks the agent to run `ship-check`, or to say in one line why a scan does not apply or cannot run. A scan is recorded in the app's `.nightvision/` directory: `manifest.json` from `run-app-security-scan`, or `retest.json` from a `verify-fix` retest. Each changed file is checked against the nearest `.nightvision/` directory above it, so in a monorepo a scan of one app does not cover another. It asks once per set of changes, so the agent is never stuck in a loop, though a new round of edits can be asked about again; it is a reminder, not a hard gate. With enforcement on, the SessionStart hook also records when each session started, in the plugin's data directory, so files that were already uncommitted before the session are ignored.
+
+### Enforcement mode for an organization
+
+Set `NIGHTVISION_ENFORCE=1` to make `ship-check` required rather than offered, and to turn on the Stop hook. To set it for every developer, put it in Claude Code's managed settings along with the marketplace and plugin, so the plugin is installed and enforcing without each developer doing anything:
+
+```json
+{
+  "env": {
+    "NIGHTVISION_ENFORCE": "1"
+  },
+  "extraKnownMarketplaces": {
+    "nvsecurity": {
+      "source": { "source": "github", "repo": "nvsecurity/claude-marketplace" }
+    }
+  },
+  "enabledPlugins": {
+    "nightvision@nvsecurity": true
+  }
+}
+```
+
+Managed settings live at `/Library/Application Support/ClaudeCode/managed-settings.json` on macOS, `/etc/claude-code/managed-settings.json` on Linux and WSL, and `C:\Program Files\ClaudeCode\managed-settings.json` on Windows, or are delivered by MDM. Pair this with the agent-instructions block above and a managed NightVision MCP server config that pre-sets `NIGHTVISION_DEFAULT_PROJECT`, so every app built with the agent lands in one NightVision project the AppSec team can see.
+
+The hooks are written for Claude Code. Codex, Cursor and other tools load the skills but not these hooks; use the agent-instructions block there.
 
 ## Structure
 
@@ -151,6 +182,10 @@ Completion contract: work on a new or materially changed app is not complete unt
 nightvision-skills/
 ├── .claude-plugin/
 │   └── plugin.json
+├── hooks/
+│   ├── hooks.json
+│   ├── session-start.sh
+│   └── stop-gate.sh
 ├── skills/
 │   ├── api-discovery/
 │   │   └── SKILL.md
@@ -181,7 +216,7 @@ nightvision-skills/
 └── LICENSE
 ```
 
-The `skills/` directory is the portable, tool-neutral asset. `.claude-plugin/plugin.json` is the Claude Code plugin manifest; other agents ignore it and load the skill folders directly.
+The `skills/` directory is the portable, tool-neutral asset. `.claude-plugin/plugin.json` is the Claude Code plugin manifest and `hooks/` holds its Claude Code hooks; other agents ignore both and load the skill folders directly.
 
 ## Contributing
 
