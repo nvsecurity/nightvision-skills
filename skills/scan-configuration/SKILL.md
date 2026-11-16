@@ -37,7 +37,7 @@ nightvision project list
 # Set default project (used when -p flag is omitted)
 nightvision project set -p my-project
 
-# Share — done through the web UI at app.nightvision.net
+# Share — done through the web UI at app.nightviz.ai
 ```
 
 ## Targets

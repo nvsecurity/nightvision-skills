@@ -94,7 +94,9 @@ For Linux ARM runners, substitute `linux_arm64` in the URL.
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `NIGHTVISION_TOKEN` | Yes | API token (store as CI secret) |
-| `NIGHTVISION_API_URL` | No | API endpoint (default: `https://api.nightvision.net/api/v1/`) |
+| `NIGHTVISION_API_URL` | No | API endpoint (default: `https://api.nightviz.ai/api/v1/`) |
+
+This API default applies to CLI 0.26.0 and later. Earlier releases default to `https://api.nightvision.net/api/v1/`; upgrade before configuring a `nightviz.ai` API host.
 
 All config keys accept env vars with the `NIGHTVISION_` prefix (hyphens become underscores).
 
