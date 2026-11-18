@@ -215,6 +215,56 @@ nightvision export jira -s "$SCAN_ID" --project-key SEC \
 
 `--swagger-file` is optional. When provided, SARIF output includes Code Traceback source annotations (file paths and line numbers linking findings to source code). When omitted, the SARIF is still valid but won't contain source locations. Always provide `--swagger-file` for API targets when the spec is available.
 
+## Failing the build on findings (the merge gate)
+
+Uploading SARIF surfaces findings but does not stop a merge. To block a merge on serious, unresolved findings, count them and exit non-zero. The scan's own exit code cannot do this: exit 0 means the scan ran, not that it was clean (see Exit codes).
+
+Filter the SARIF to the findings that should block, then count what is left:
+
+```bash
+# Keep only open critical and high findings: drop lower severities, and drop
+# anything already triaged away (resolved, false positive, won't fix).
+nightvision export sarif -s "$SCAN_ID" --openapi-file openapi-spec.yml \
+  --exclude-severity info,low,medium,unknown,unspecified \
+  --exclude-resolution resolved,false_positive,wont_fix \
+  -o gate.sarif
+
+COUNT=$(jq '[.runs[].results[]] | length' gate.sarif)
+echo "Open critical/high findings: $COUNT"
+if [ "$COUNT" -gt 0 ]; then
+  echo "NightVision gate failed: $COUNT open critical/high finding(s). See the Security tab or the NightVision dashboard."
+  exit 1
+fi
+```
+
+Points that matter:
+
+- **Export the full SARIF for the Security tab, and a separate filtered copy for the gate.** Upload the unfiltered `results.sarif` so developers still see every finding; count `gate.sarif` to decide pass or fail. Do not gate on the file you uploaded, or lower-severity findings vanish from the dashboard.
+- **`--exclude-resolution` is what makes the gate livable.** Once AppSec marks a finding false positive or accepts the risk in NightVision, it stops failing the build, with no code change and no inline-suppression file to maintain. Keep `resolved,false_positive,wont_fix` excluded so a triaged finding does not re-break the pipeline.
+- **Set the bar deliberately.** Excluding `info,low,medium,unknown,unspecified` leaves critical and high. To gate on high and above only, that is already the line; to include medium, drop `medium` from the exclude list.
+- **`jq` counts `.runs[].results[]`** across every run in the file, so it is correct whether the scan produced one run or several. If `jq` is not on the runner, `grep -c '"ruleId"' gate.sarif` is a rough fallback, but install `jq` for an exact count.
+
+### Blocking a merge when app code changed but no scan ran
+
+The gate above assumes a scan ran. The other half, a PR that changes application code and merges with no scan at all, is enforced by the CI platform, not the CLI: make the scan job a **required status check** and trigger it on the paths that hold app code, so the check must run and pass before merge.
+
+GitHub Actions example:
+
+```yaml
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'api/**'
+      - '!**/*.md'
+```
+
+Then mark the job's check required in branch protection (Settings > Branches > Branch protection rule > Require status checks to pass). A PR that touches those paths cannot merge until the scan job succeeds, and the gate step above makes "succeeds" mean "no open critical/high findings." A PR that touches none of them skips the scan, so docs-only and config-only changes are not blocked.
+
+GitLab's equivalent is a `rules:` clause keyed on `changes:` plus a protected-branch merge check; the pattern is the same, path-trigger the scan and require it.
+
+The NightVision Claude Code plugin ships a Stop hook that nudges the agent to run `ship-check` when app code changed without a scan. That hook is a reminder on the developer's machine; this required check is the enforcement in CI. Use both: the hook catches it early, the check catches it at the gate.
+
 ## CI platform quick reference
 
 See [references/ci-platforms.md](references/ci-platforms.md) for complete, copy-pasteable pipeline configs.

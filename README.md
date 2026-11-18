@@ -76,8 +76,11 @@ Tool-specific shortcuts:
 | **`ci-cd-integration`** | Wire NightVision into your pipeline — GitHub Actions, GitLab CI, Azure DevOps, Jenkins, BitBucket, and JFrog with SARIF/CSV export and breaking-change detection |
 | **`secure-build`** | Secure-by-default rules the agent follows while writing a web app or API: access control on every object, parameterized queries, secrets out of code and frontend bundles, sessions, CORS and headers, rate limits, uploads, SSRF, AI features, dependencies, and Supabase/Firebase rules |
 | **`authz-review`** | Review object-level and function-level access control (BOLA/IDOR, admin actions, mass assignment) route by route with source `file:line`, and write a two-user test the developer runs against their own local or dev app |
+| **`chain-attacks`** | Find and reproduce multi-step business-logic vulnerabilities (vuln chains): sequences where each request is allowed but the ordered combination breaks a business rule (cross-tenant chains, state-machine step-skips, one-time-action replay, value tampering, privilege-escalation, SSRF-in-a-flow). Non-destructive and dev-only: it proves a chain is reachable and stops before any state-changing step |
 | **`verify-fix`** | Prove a finding is fixed: replay the proof-of-concept request, then rerun only the check that found it against the same target, and report verified or still open with the retest scan ID |
 | **`ship-check`** | The finish line for agent-built apps: review the change, scan the running app, fix what is real in code written this session, verify each fix with a retest, and report what is open, with false-positive candidates left for AppSec to decide |
+| **`fleet-status`** | Read-only AppSec roll-up across every app: which apps exist, when each was last scanned, which have never been scanned or are stale, and where the open Critical and High findings are. Answers "who is building what" for an AppSec lead or CISO, with the CLI as the portable path so it runs on any agent |
+| **`multi-agent-relay`** | Build a feature as an ordered task sequence split across coordinating agents that never talk directly: a driver authors one task at a time, an implementation agent (standing session or spawned subagent) implements and tests, and a shipping agent commits, reviews, fixes and ships. They coordinate through report files with a fixed status-line protocol and background monitors; pair it with the security skills as tasks or review lenses |
 
 ### Example Usage
 
@@ -98,6 +101,12 @@ Just ask your agent what you need:
 
 > Can one user see another user's orders in this app?
 
+> Can a sequence of allowed requests reach a state my app should forbid? Run a chain-attack review
+
+> Which of our apps have never been scanned? Give me the fleet status
+
+> Build this task sequence with a separate implementer and shipping agent using the relay
+
 > Add NightVision to my GitHub Actions workflow
 
 > Extract an OpenAPI spec from this Django project
@@ -114,8 +123,11 @@ In Claude Code, invoke skills directly with slash commands:
 /ci-cd-integration
 /secure-build
 /authz-review
+/chain-attacks
 /verify-fix
 /ship-check
+/fleet-status
+/multi-agent-relay
 ```
 
 `/api-discovery`, the former name of `/source-intelligence`, still works.
@@ -208,10 +220,18 @@ nightvision-skills/
 │   │   └── SKILL.md
 │   ├── authz-review/
 │   │   └── SKILL.md
+│   ├── chain-attacks/
+│   │   ├── SKILL.md
+│   │   └── references/
 │   ├── verify-fix/
 │   │   └── SKILL.md
-│   └── ship-check/
-│       └── SKILL.md
+│   ├── ship-check/
+│   │   └── SKILL.md
+│   ├── fleet-status/
+│   │   └── SKILL.md
+│   └── multi-agent-relay/
+│       ├── SKILL.md
+│       └── templates/
 ├── README.md
 └── LICENSE
 ```
