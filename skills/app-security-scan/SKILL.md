@@ -36,6 +36,7 @@ Treat frameworks outside this list as verify-first for source discovery. Still r
    - The endpoint count in that spec. Count the entries under `paths:` in the spec file (for example `grep -c '^  /' <attached_spec_file>`) and say how many endpoints DAST will exercise.
    - `target.action` (`created`, `updated`, or `reused`) and the resolved target's `type`, nested at `target.target.type` (the `target` block wraps the action and the resolved target object). Any non-`WEB` type means the spec is attached and findings can carry source `file:line` (the backend echoes a spec-attached target as `API` or `OPENAPI`, so do not match on `API` alone); type `WEB` means it is scanning without a spec. Prefer `api_discovery.status` for the coverage judgment; treat the target `type` as confirmation only.
    - The `scan_id`.
+   - A target the harness creates is tagged "Agent created" in NightVision, so the dashboard can show which applications an AI coding agent set up.
 
    Anything other than `api_discovery.status: success` producing a spec-attached (non-`WEB`) target is a coverage problem: say so now, not after the scan burns 15 minutes against a stale or absent spec. This is the same failure the coverage floor in Reporting catches, only caught earlier.
 5. It returns a `scan_id` quickly (`wait` defaults to false). DAST commonly runs longer than 10 minutes, so do not assume it finished.

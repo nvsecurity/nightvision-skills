@@ -51,7 +51,7 @@ The roll-up covers only what the logged-in account can see. Say whose view it is
 All three commands are read-only. Pass `-F json`; the default output is text. Each returns a JSON list of objects.
 
 - `nightvision project list -F json`: projects, each with `name`.
-- `nightvision target list -p <project> -F json`: targets, each with `name`, `type` (`URL` for a web app, `OPENAPI` for an API), `location`, `project_name`, and `own_user` (the account that created the target).
+- `nightvision target list -p <project> -F json`: targets, each with `name`, `type` (`URL` for a web app, `OPENAPI` for an API), `location`, `project_name`, and `own_user` (the account that created the target). It does not include the target's tags.
 - `nightvision scan list -p <project> -F json`: scans, each with `id`, `target_name`, `target_type`, `status_value` (`SUCCEEDED`, `FAILED`, `ABORTED`, or an in-progress status), `created_at`, `last_updated_at`, `issues_count`, and `issues_statistics` with the keys `Critical`, `High`, `Medium`, `Low`, `Informational`, `Unknown`, `Unspecified`.
 
 Run `scan list` once per project with `-p`. Without `-p` it covers only the CLI's current project, and scans carry a target name but no project name, so a per-project call is what keeps two same-named targets in different projects apart.
@@ -125,7 +125,7 @@ Use only these read tools. Do not call `start-scan`, `run-app-security-scan`, `c
 
 ## Limits to state honestly
 
-- **This is scan posture, not authorship.** NightVision has no owner or team field on a target, and no tags to add one. "Who built it" comes from the project and target names, plus `own_user`, which is the account that created the target. That account is often a CI token or the person who onboarded the app, not the team that owns the code. Present it as "created by", never as "owner".
+- **This is scan posture, not authorship.** Targets can carry tags, but the CLI list does not return them. A target tagged "Agent created" was set up by an AI coding agent through the NightVision MCP; when the user wants to know what agents have onboarded, point them to the dashboard's Applications page, where tags show and can be filtered. A tag says how a target was created, not which team owns the code. Otherwise, "who built it" comes from the project and target names, plus `own_user`, which is the account that created the target. That account is often a CI token or the person who onboarded the app, not the team that owns the code. Present it as "created by", never as "owner".
 - **"No open Critical or High" is not "secure."** It means the latest successful scan found none. It says nothing about what that scan could not reach, code that changed since, or classes of flaw a dynamic scan does not test.
 - **Counts are per scan, not deduplicated across apps**, and they reflect the scan's findings as triaged in NightVision at the time of the scan list.
 - **An app with no target is invisible here.** The roll-up can show a target that was never scanned; it cannot show an app nobody registered. If the user has an app inventory elsewhere, compare it with the target list.
